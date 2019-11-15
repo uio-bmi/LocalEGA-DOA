@@ -1,0 +1,29 @@
+version: "3.7"
+
+services:
+
+  db:
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_DB=localega
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  vault-s3:
+    image: minio/minio
+    ports:
+      - 9000:9000
+    environment:
+      - MINIO_ACCESS_KEY=minio
+      - MINIO_SECRET_KEY=miniostorage
+    volumes:
+      - s3:/data
+    command: server /data
+
+volumes:
+  db:
+  s3:
