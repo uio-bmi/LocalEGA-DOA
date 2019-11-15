@@ -4,7 +4,9 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import io.minio.MinioClient;
 import io.minio.errors.*;
+import no.uio.ifi.crypt4gh.pojo.header.Header;
 import no.uio.ifi.crypt4gh.stream.Crypt4GHInputStream;
+import no.uio.ifi.crypt4gh.util.Crypt4GHUtils;
 import no.uio.ifi.crypt4gh.util.KeyUtils;
 import no.uio.ifi.localega.doa.model.LEGADataset;
 import no.uio.ifi.localega.doa.model.LEGAFile;
@@ -21,10 +23,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.security.GeneralSecurityException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
+import java.security.*;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
@@ -73,10 +72,7 @@ public class LocalEGADOAController {
         if (StringUtils.isEmpty(publicKey)) {
             return getPlaintextResponse(file, header, bodyInputStream, privateKey);
         } else {
-            ByteArrayInputStream headerInputStream = new ByteArrayInputStream(header);
-            SequenceInputStream sequenceInputStream = new SequenceInputStream(headerInputStream, bodyInputStream);
-            Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(sequenceInputStream, privateKey);
-            return ResponseEntity.ok().headers(getResponseHeaders(file)).build();
+            return getEncryptedResponse(publicKey, file, header, bodyInputStream, privateKey);
         }
     }
 
@@ -85,6 +81,14 @@ public class LocalEGADOAController {
         SequenceInputStream sequenceInputStream = new SequenceInputStream(headerInputStream, bodyInputStream);
         Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(sequenceInputStream, privateKey);
         return ResponseEntity.ok().headers(getResponseHeaders(file)).body(new InputStreamResource(crypt4GHInputStream));
+    }
+
+    private ResponseEntity<?> getEncryptedResponse(String publicKey, LEGAFile file, byte[] header, InputStream bodyInputStream, PrivateKey privateKey) throws GeneralSecurityException, IOException {
+        PublicKey recipientPublicKey = KeyUtils.getInstance().readKey(publicKey, PublicKey.class);
+        Header newHeader = Crypt4GHUtils.getInstance().addRecipient(header, privateKey, recipientPublicKey);
+        ByteArrayInputStream headerInputStream = new ByteArrayInputStream(newHeader.serialize());
+        SequenceInputStream sequenceInputStream = new SequenceInputStream(headerInputStream, bodyInputStream);
+        return ResponseEntity.ok().headers(getResponseHeaders(file)).body(new InputStreamResource(sequenceInputStream));
     }
 
     private HttpHeaders getResponseHeaders(LEGAFile file) {
