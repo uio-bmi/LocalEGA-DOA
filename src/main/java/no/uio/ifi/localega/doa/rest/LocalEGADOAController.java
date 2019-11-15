@@ -53,10 +53,8 @@ public class LocalEGADOAController {
     @RequestMapping("/download/{fileId}")
     @ResponseBody
     public ResponseEntity<?> download(@RequestHeader("Authorization") String token,
-                                      @RequestHeader(value = "PublicKey", required = false) String publicKey,
-                                      @PathVariable(value = "fileId") String fileId,
-                                      @RequestParam(value = "startByte", required = false, defaultValue = "0") long startByte,
-                                      @RequestParam(value = "endByte", required = false, defaultValue = "0") long endByte) throws Exception {
+                                      @RequestHeader(value = "Public-Key", required = false) String publicKey,
+                                      @PathVariable(value = "fileId") String fileId) throws Exception {
         if (StringUtils.isEmpty(token)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -80,7 +78,7 @@ public class LocalEGADOAController {
         ByteArrayInputStream headerInputStream = new ByteArrayInputStream(header);
         SequenceInputStream sequenceInputStream = new SequenceInputStream(headerInputStream, bodyInputStream);
         Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(sequenceInputStream, privateKey);
-        return ResponseEntity.ok().headers(getResponseHeaders(file)).body(new InputStreamResource(crypt4GHInputStream));
+        return ResponseEntity.ok().headers(getResponseHeaders(file, false)).body(new InputStreamResource(crypt4GHInputStream));
     }
 
     private ResponseEntity<?> getEncryptedResponse(String publicKey, LEGAFile file, byte[] header, InputStream bodyInputStream, PrivateKey privateKey) throws GeneralSecurityException, IOException {
@@ -88,13 +86,17 @@ public class LocalEGADOAController {
         Header newHeader = Crypt4GHUtils.getInstance().addRecipient(header, privateKey, recipientPublicKey);
         ByteArrayInputStream headerInputStream = new ByteArrayInputStream(newHeader.serialize());
         SequenceInputStream sequenceInputStream = new SequenceInputStream(headerInputStream, bodyInputStream);
-        return ResponseEntity.ok().headers(getResponseHeaders(file)).body(new InputStreamResource(sequenceInputStream));
+        return ResponseEntity.ok().headers(getResponseHeaders(file, true)).body(new InputStreamResource(sequenceInputStream));
     }
 
-    private HttpHeaders getResponseHeaders(LEGAFile file) {
+    private HttpHeaders getResponseHeaders(LEGAFile file, boolean encrypted) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        responseHeaders.setContentDisposition(ContentDisposition.builder("attachment").filename(file.getFileName()).build());
+        String fileName = file.getFileName();
+        if (encrypted) {
+            fileName += ".enc";
+        }
+        responseHeaders.setContentDisposition(ContentDisposition.builder("attachment").filename(fileName).build());
         return responseHeaders;
     }
 
