@@ -47,8 +47,8 @@ public class LocalEGADOAController {
     @Value("${s3.bucket}")
     private String s3Bucket;
 
-    @Value("${crypt4gh.secret-key}")
-    private String crypt4ghSecretKey;
+    @Value("${crypt4gh.private-key-path}")
+    private String crypt4ghPrivateKeyPath;
 
     @RequestMapping("/download/{fileId}")
     @ResponseBody
@@ -66,7 +66,7 @@ public class LocalEGADOAController {
         LEGAFile file = fileRepository.findByFileId(fileId).orElseThrow(() -> new RuntimeException(String.format("File with ID %s doesn't exist", fileId)));
         byte[] header = Hex.decodeHex(file.getHeader());
         InputStream bodyInputStream = getFileInputStream(file);
-        PrivateKey privateKey = KeyUtils.getInstance().readKey(crypt4ghSecretKey, PrivateKey.class);
+        PrivateKey privateKey = KeyUtils.getInstance().readPEMFile(new File(crypt4ghPrivateKeyPath), PrivateKey.class);
         if (StringUtils.isEmpty(publicKey)) {
             return getPlaintextResponse(file, header, bodyInputStream, privateKey);
         } else {
@@ -83,7 +83,7 @@ public class LocalEGADOAController {
 
     private ResponseEntity<?> getEncryptedResponse(String publicKey, LEGAFile file, byte[] header, InputStream bodyInputStream, PrivateKey privateKey) throws GeneralSecurityException, IOException {
         PublicKey recipientPublicKey = KeyUtils.getInstance().readKey(publicKey, PublicKey.class);
-        Header newHeader = Crypt4GHUtils.getInstance().addRecipient(header, privateKey, recipientPublicKey);
+        Header newHeader = Crypt4GHUtils.getInstance().setRecipient(header, privateKey, recipientPublicKey);
         ByteArrayInputStream headerInputStream = new ByteArrayInputStream(newHeader.serialize());
         SequenceInputStream sequenceInputStream = new SequenceInputStream(headerInputStream, bodyInputStream);
         return ResponseEntity.ok().headers(getResponseHeaders(file, true)).body(new InputStreamResource(sequenceInputStream));

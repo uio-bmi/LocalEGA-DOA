@@ -6,11 +6,15 @@ import com.auth0.jwt.algorithms.Algorithm;
 import io.minio.MinioClient;
 import io.minio.errors.InvalidEndpointException;
 import io.minio.errors.InvalidPortException;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPublicKey;
@@ -42,9 +46,8 @@ public class LocalEGADOAApplication {
     @Value("${s3.secure}")
     private boolean s3Secure;
 
-    @Value("${jwt.public-key}")
-    private String jwtPublicKey;
-
+    @Value("${jwt.public-key-path}")
+    private String jwtPublicKeyPath;
 
     public static void main(String[] args) {
         SpringApplication.run(LocalEGADOAApplication.class, args);
@@ -56,12 +59,13 @@ public class LocalEGADOAApplication {
     }
 
     @Bean
-    public JWTVerifier jwtVerifier() throws InvalidKeySpecException, NoSuchAlgorithmException {
+    public JWTVerifier jwtVerifier() throws InvalidKeySpecException, NoSuchAlgorithmException, IOException {
         return JWT.require(Algorithm.RSA256(getPublicKey(), null)).build();
     }
 
-    private RSAPublicKey getPublicKey() throws NoSuchAlgorithmException, InvalidKeySpecException {
+    private RSAPublicKey getPublicKey() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        String jwtPublicKey = FileUtils.readFileToString(new File(jwtPublicKeyPath), Charset.defaultCharset());
         String encodedKey = jwtPublicKey
                 .replace(BEGIN_PUBLIC_KEY, "")
                 .replace(END_PUBLIC_KEY, "")
