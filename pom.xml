@@ -56,7 +56,7 @@
         <dependency>
             <groupId>no.uio.ifi</groupId>
             <artifactId>crypt4gh</artifactId>
-            <version>2.3.0</version>
+            <version>2.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -73,8 +73,9 @@
 
     <repositories>
         <repository>
-            <id>myMavenRepoRead</id>
-            <url>https://mymavenrepo.com/repo/4YZjO3lybPOCZbJh25fb/</url>
+            <id>central</id>
+            <name>bintray</name>
+            <url>http://jcenter.bintray.com</url>
         </repository>
     </repositories>
 
