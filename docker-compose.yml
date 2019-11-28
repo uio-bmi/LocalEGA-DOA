@@ -6,9 +6,6 @@ services:
     image: uiobmi/localega-doa
     ports:
       - 8080:8080
-    depends_on:
-      - vault-s3
-      - db
     environment:
       - DB_INSTANCE
       - POSTGRES_DB
@@ -19,57 +16,21 @@ services:
       - S3_SECRET_KEY
       - JWT_PUBLIC_KEY_PATH
       - CRYPT4GH_PRIVATE_KEY_PATH
+      - CRYPT4GH_PRIVATE_KEY_PASSWORD_PATH
     secrets:
+      - source: CA.cert
+        target: /usr/local/share/ca-certificates/CA.cert
       - source: jwt_public_key
         target: /etc/jwt/key.pem
       - source: crypt4gh_private_key
         target: /etc/crypt4gh/key.pem
 
-  db:
-    image: postgres
-    ports:
-      - 5432:5432
-    environment:
-      - POSTGRES_DB
-      - POSTGRES_USER
-      - POSTGRES_PASSWORD
-    volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-      - db:/var/lib/postgresql/data
-
-  vault-s3:
-    image: minio/minio
-    ports:
-      - 9000:9000
-    environment:
-      - MINIO_ACCESS_KEY=${S3_ACCESS_KEY}
-      - MINIO_SECRET_KEY${S3_SECRET_KEY}
-    volumes:
-      - s3:/data
-    command: server /data
-
-  mc:
-    image: minio/mc
-    depends_on:
-      - vault-s3
-    entrypoint: >
-      /bin/sh -c "sleep 20;
-      /usr/bin/mc config host add myminio http://vault-s3:9000 ${S3_ACCESS_KEY} ${S3_SECRET_KEY};
-      /usr/bin/mc mb myminio/localega;
-      /usr/bin/mc cp /body.bin myminio/localega/1;
-      exit 0;"
-    volumes:
-      - ./body.bin:/body.bin
-    environment:
-      - S3_ACCESS_KEY
-      - S3_SECRET_KEY
-
-volumes:
-  db:
-  s3:
-
 secrets:
+  CA.cert:
+    file: ./CA.cert
   jwt_public_key:
     file: ./jwt.pub.pem
   crypt4gh_private_key:
-    file: ./reader.sec.pem
+    file: ./key.sec
+  crypt4gh_private_key_password:
+    file: ./key.pass

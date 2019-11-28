@@ -4,6 +4,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import io.minio.MinioClient;
 import io.minio.errors.*;
+import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.crypt4gh.pojo.header.Header;
 import no.uio.ifi.crypt4gh.stream.Crypt4GHInputStream;
 import no.uio.ifi.crypt4gh.util.Crypt4GHUtils;
@@ -13,6 +14,7 @@ import no.uio.ifi.localega.doa.model.LEGAFile;
 import no.uio.ifi.localega.doa.repositories.DatasetRepository;
 import no.uio.ifi.localega.doa.repositories.FileRepository;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.security.*;
 import java.util.Arrays;
@@ -29,6 +32,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 public class LocalEGADOAController {
 
@@ -50,6 +54,9 @@ public class LocalEGADOAController {
     @Value("${crypt4gh.private-key-path}")
     private String crypt4ghPrivateKeyPath;
 
+    @Value("${crypt4gh.private-key-password-path}")
+    private String crypt4ghPrivateKeyPasswordPath;
+
     @RequestMapping("/download/{fileId}")
     @ResponseBody
     public ResponseEntity<?> download(@RequestHeader("Authorization") String token,
@@ -59,14 +66,19 @@ public class LocalEGADOAController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         DecodedJWT decodedJWT = jwtVerifier.verify(token.replace("Bearer ", ""));
+        String subject = decodedJWT.getSubject();
+        log.info("User {} is authenticated and attempting to download the file: {}", subject, fileId);
         Set<String> datasetIds = Arrays.stream(decodedJWT.getClaim("authorities").asArray(String.class)).collect(Collectors.toSet());
         if (!checkPermissions(fileId, datasetIds)) {
+            log.info("User doesn't have permissions to access this file, abort");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        log.info("User has permissions to access the file, initializing download");
         LEGAFile file = fileRepository.findByFileId(fileId).orElseThrow(() -> new RuntimeException(String.format("File with ID %s doesn't exist", fileId)));
         byte[] header = Hex.decodeHex(file.getHeader());
         InputStream bodyInputStream = getFileInputStream(file);
-        PrivateKey privateKey = KeyUtils.getInstance().readPEMFile(new File(crypt4ghPrivateKeyPath), PrivateKey.class);
+        String password = FileUtils.readFileToString(new File(crypt4ghPrivateKeyPasswordPath), Charset.defaultCharset());
+        PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File(crypt4ghPrivateKeyPath), password.toCharArray());
         if (StringUtils.isEmpty(publicKey)) {
             return getPlaintextResponse(file, header, bodyInputStream, privateKey);
         } else {
@@ -82,7 +94,7 @@ public class LocalEGADOAController {
     }
 
     private ResponseEntity<?> getEncryptedResponse(String publicKey, LEGAFile file, byte[] header, InputStream bodyInputStream, PrivateKey privateKey) throws GeneralSecurityException, IOException {
-        PublicKey recipientPublicKey = KeyUtils.getInstance().readKey(publicKey, PublicKey.class);
+        PublicKey recipientPublicKey = KeyUtils.getInstance().readPublicKey(publicKey);
         Header newHeader = Crypt4GHUtils.getInstance().setRecipient(header, privateKey, recipientPublicKey);
         ByteArrayInputStream headerInputStream = new ByteArrayInputStream(newHeader.serialize());
         SequenceInputStream sequenceInputStream = new SequenceInputStream(headerInputStream, bodyInputStream);
