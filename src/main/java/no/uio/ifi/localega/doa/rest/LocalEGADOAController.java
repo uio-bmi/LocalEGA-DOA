@@ -20,7 +20,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.*;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.*;
@@ -58,7 +61,6 @@ public class LocalEGADOAController {
     private String crypt4ghPrivateKeyPasswordPath;
 
     @RequestMapping("/files/{fileId}")
-    @ResponseBody
     public ResponseEntity<?> files(@RequestHeader("Authorization") String token,
                                    @RequestHeader(value = "Public-Key", required = false) String publicKey,
                                    @PathVariable(value = "fileId") String fileId) throws Exception {
