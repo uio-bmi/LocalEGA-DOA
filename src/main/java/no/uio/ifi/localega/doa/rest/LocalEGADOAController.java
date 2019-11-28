@@ -57,11 +57,11 @@ public class LocalEGADOAController {
     @Value("${crypt4gh.private-key-password-path}")
     private String crypt4ghPrivateKeyPasswordPath;
 
-    @RequestMapping("/download/{fileId}")
+    @RequestMapping("/files/{fileId}")
     @ResponseBody
-    public ResponseEntity<?> download(@RequestHeader("Authorization") String token,
-                                      @RequestHeader(value = "Public-Key", required = false) String publicKey,
-                                      @PathVariable(value = "fileId") String fileId) throws Exception {
+    public ResponseEntity<?> files(@RequestHeader("Authorization") String token,
+                                   @RequestHeader(value = "Public-Key", required = false) String publicKey,
+                                   @PathVariable(value = "fileId") String fileId) throws Exception {
         if (StringUtils.isEmpty(token)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
