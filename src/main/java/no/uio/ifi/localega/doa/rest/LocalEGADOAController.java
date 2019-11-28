@@ -5,10 +5,14 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import io.minio.MinioClient;
 import io.minio.errors.*;
 import lombok.extern.slf4j.Slf4j;
+import no.uio.ifi.crypt4gh.pojo.header.DataEditList;
 import no.uio.ifi.crypt4gh.pojo.header.Header;
+import no.uio.ifi.crypt4gh.pojo.header.HeaderPacket;
+import no.uio.ifi.crypt4gh.pojo.header.X25519ChaCha20IETFPoly1305HeaderPacket;
 import no.uio.ifi.crypt4gh.stream.Crypt4GHInputStream;
 import no.uio.ifi.crypt4gh.util.Crypt4GHUtils;
 import no.uio.ifi.crypt4gh.util.KeyUtils;
+import no.uio.ifi.localega.doa.dto.DestinationFormat;
 import no.uio.ifi.localega.doa.model.LEGADataset;
 import no.uio.ifi.localega.doa.model.LEGAFile;
 import no.uio.ifi.localega.doa.repositories.DatasetRepository;
@@ -20,10 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.*;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.*;
@@ -60,10 +61,13 @@ public class LocalEGADOAController {
     @Value("${crypt4gh.private-key-password-path}")
     private String crypt4ghPrivateKeyPasswordPath;
 
-    @RequestMapping("/files/{fileId}")
-    public ResponseEntity<?> files(@RequestHeader("Authorization") String token,
+    @GetMapping("/files/{fileId}")
+    public ResponseEntity<?> files(@RequestHeader(value = "Authorization") String token,
                                    @RequestHeader(value = "Public-Key", required = false) String publicKey,
-                                   @PathVariable(value = "fileId") String fileId) throws Exception {
+                                   @PathVariable(value = "fileId") String fileId,
+                                   @RequestParam(value = "destinationFormat", required = false) String destinationFormat,
+                                   @RequestParam(value = "startCoordinate", required = false) String startCoordinate,
+                                   @RequestParam(value = "endCoordinate", required = false) String endCoordinate) throws Exception {
         if (StringUtils.isEmpty(token)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -81,23 +85,34 @@ public class LocalEGADOAController {
         InputStream bodyInputStream = getFileInputStream(file);
         String password = FileUtils.readFileToString(new File(crypt4ghPrivateKeyPasswordPath), Charset.defaultCharset());
         PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File(crypt4ghPrivateKeyPath), password.toCharArray());
-        if (StringUtils.isEmpty(publicKey)) {
-            return getPlaintextResponse(file, header, bodyInputStream, privateKey);
+        if (DestinationFormat.CRYPT4GH.name().equalsIgnoreCase(destinationFormat)) {
+            return getEncryptedResponse(file, header, bodyInputStream, privateKey, startCoordinate, endCoordinate, publicKey);
         } else {
-            return getEncryptedResponse(publicKey, file, header, bodyInputStream, privateKey);
+            return getPlaintextResponse(file, header, bodyInputStream, privateKey, startCoordinate, endCoordinate);
         }
     }
 
-    private ResponseEntity<?> getPlaintextResponse(LEGAFile file, byte[] header, InputStream bodyInputStream, PrivateKey privateKey) throws IOException, GeneralSecurityException {
+    private ResponseEntity<?> getPlaintextResponse(LEGAFile file, byte[] header, InputStream bodyInputStream, PrivateKey privateKey, String startCoordinate, String endCoordinate) throws IOException, GeneralSecurityException {
         ByteArrayInputStream headerInputStream = new ByteArrayInputStream(header);
         SequenceInputStream sequenceInputStream = new SequenceInputStream(headerInputStream, bodyInputStream);
-        Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(sequenceInputStream, privateKey);
+        Crypt4GHInputStream crypt4GHInputStream;
+        if (!StringUtils.isEmpty(startCoordinate) && !StringUtils.isEmpty(endCoordinate)) {
+            DataEditList dataEditList = new DataEditList(new long[]{Long.parseLong(startCoordinate), Long.parseLong(endCoordinate)});
+            crypt4GHInputStream = new Crypt4GHInputStream(sequenceInputStream, dataEditList, privateKey);
+        } else {
+            crypt4GHInputStream = new Crypt4GHInputStream(sequenceInputStream, privateKey);
+        }
         return ResponseEntity.ok().headers(getResponseHeaders(file, false)).body(new InputStreamResource(crypt4GHInputStream));
     }
 
-    private ResponseEntity<?> getEncryptedResponse(String publicKey, LEGAFile file, byte[] header, InputStream bodyInputStream, PrivateKey privateKey) throws GeneralSecurityException, IOException {
+    private ResponseEntity<?> getEncryptedResponse(LEGAFile file, byte[] header, InputStream bodyInputStream, PrivateKey privateKey, String startCoordinate, String endCoordinate, String publicKey) throws GeneralSecurityException, IOException {
         PublicKey recipientPublicKey = KeyUtils.getInstance().readPublicKey(publicKey);
         Header newHeader = Crypt4GHUtils.getInstance().setRecipient(header, privateKey, recipientPublicKey);
+        if (!StringUtils.isEmpty(startCoordinate) && !StringUtils.isEmpty(endCoordinate)) {
+            DataEditList dataEditList = new DataEditList(new long[]{Long.parseLong(startCoordinate), Long.parseLong(endCoordinate)});
+            HeaderPacket dataEditListHeaderPacket = new X25519ChaCha20IETFPoly1305HeaderPacket(dataEditList, privateKey, recipientPublicKey);
+            newHeader.getHeaderPackets().add(dataEditListHeaderPacket);
+        }
         ByteArrayInputStream headerInputStream = new ByteArrayInputStream(newHeader.serialize());
         SequenceInputStream sequenceInputStream = new SequenceInputStream(headerInputStream, bodyInputStream);
         return ResponseEntity.ok().headers(getResponseHeaders(file, true)).body(new InputStreamResource(sequenceInputStream));
