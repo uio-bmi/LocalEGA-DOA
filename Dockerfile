@@ -12,7 +12,10 @@ COPY entrypoint.sh .
 
 RUN chmod +x entrypoint.sh
 
-#USER 1000
+RUN addgroup -g 1000 lega && \
+    adduser -D -u 1000 -G lega lega
+
+USER 1000
 
 ENTRYPOINT ["/entrypoint.sh"]
 
