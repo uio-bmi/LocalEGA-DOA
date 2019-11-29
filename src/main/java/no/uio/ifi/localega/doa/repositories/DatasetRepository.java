@@ -4,11 +4,10 @@ import no.uio.ifi.localega.doa.model.LEGADataset;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigInteger;
 import java.util.Collection;
 
 @Repository
-public interface DatasetRepository extends JpaRepository<LEGADataset, BigInteger> {
+public interface DatasetRepository extends JpaRepository<LEGADataset, String> {
 
     Collection<LEGADataset> findByDatasetId(String datasetId);
 

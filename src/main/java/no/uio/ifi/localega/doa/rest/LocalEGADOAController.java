@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.security.*;
@@ -130,10 +131,12 @@ public class LocalEGADOAController {
     }
 
     private InputStream getFileInputStream(LEGAFile file) throws IOException, InvalidKeyException, NoSuchAlgorithmException, InsufficientDataException, InvalidArgumentException, InvalidResponseException, InternalException, NoResponseException, InvalidBucketNameException, XmlPullParserException, ErrorResponseException {
-        if (StringUtils.isEmpty(file.getFilePath())) { // S3
-            return minioClient.getObject(s3Bucket, file.getId().toString());
-        } else { // filesystem
-            return Files.newInputStream(new File(file.getFilePath()).toPath());
+        String filePath = file.getFilePath();
+        try { // S3
+            BigInteger s3FileId = new BigInteger(filePath);
+            return minioClient.getObject(s3Bucket, s3FileId.toString());
+        } catch (NumberFormatException e) { // filesystem
+            return Files.newInputStream(new File(filePath).toPath());
         }
     }
 
