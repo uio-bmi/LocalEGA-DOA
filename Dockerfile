@@ -8,12 +8,9 @@ FROM openjdk:13-alpine
 
 COPY --from=builder /target/*-SNAPSHOT.jar /localega-doa.jar
 
-COPY entrypoint.sh .
+RUN addgroup -g 1000 lega && \
+    adduser -D -u 1000 -G lega lega
 
-RUN chmod +x entrypoint.sh
-
-#USER 1000
-
-ENTRYPOINT ["/entrypoint.sh"]
+USER 1000
 
 CMD ["java", "-jar", "/localega-doa.jar"]

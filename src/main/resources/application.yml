@@ -1,16 +1,20 @@
 logging.level.root: info
 
+server.ssl:
+  key-store-type: PKCS12
+  key-store: ${KEYSTORE_PATH:file:/etc/ega/ssl/server.cert}
+  key-store-password: ${CERT_PASSWORD}
+
 spring:
   datasource:
-    url: jdbc:postgresql://${DB_INSTANCE:localhost}:${DB_PORT:5432}/${POSTGRES_DB:localega}?stringtype=unspecified
-    username: ${POSTGRES_USER:test}
-    password: ${POSTGRES_PASSWORD:test}
+    url: jdbc:postgresql://${DB_INSTANCE:db}:${DB_PORT:5432}/${POSTGRES_DB:lega}?sslmode=verify-full&sslrootcert=${ROOT_CERT_PATH:/etc/ega/ssl/CA.cert}&sslcert=${CERT_PATH:/etc/ega/ssl/client.cert}&sslkey=${CERT_KEY:/etc/ega/ssl/client.key}
+    username: ${POSTGRES_USER:lega_out}
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
-    initialization-mode: always
   jpa.properties.hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
 
 s3:
-  endpoint: ${S3_ENDPOINT:localhost}
+  endpoint: ${S3_ENDPOINT:vault}
   port: ${S3_PORT:9000}
   access-key: ${S3_ACCESS_KEY:minio}
   secret-key: ${S3_SECRET_KEY:miniostorage}
@@ -18,8 +22,8 @@ s3:
   secure: ${S3_SECURE:false}
   bucket: ${S3_BUCKET:localega}
 
-jwt.public-key-path: ${JWT_PUBLIC_KEY_PATH:}
+jwt.public-key-path: ${JWT_PUBLIC_KEY_PATH:/etc/ega/jwt/key.pem}
 
 crypt4gh:
-  private-key-path: ${CRYPT4GH_PRIVATE_KEY_PATH:}
-  private-key-password-path: ${CRYPT4GH_PRIVATE_KEY_PASSWORD_PATH:}
+  private-key-path: ${CRYPT4GH_PRIVATE_KEY_PATH:/etc/ega/crypt4gh/key.pem}
+  private-key-password-path: ${CRYPT4GH_PRIVATE_KEY_PASSWORD_PATH:/etc/ega/crypt4gh/key.pass}
