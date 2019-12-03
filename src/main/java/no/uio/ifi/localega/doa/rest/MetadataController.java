@@ -45,7 +45,7 @@ public class MetadataController {
         String subject = decodedJWT.getSubject();
         log.info("User {} is authenticated and is attempting to list files of dataset {}", subject, datasetId);
         Set<String> datasetIds = Arrays.stream(decodedJWT.getClaim("authorities").asArray(String.class)).collect(Collectors.toSet());
-        if (datasetIds.contains(datasetId)) {
+        if (!datasetIds.contains(datasetId)) {
             log.info("User doesn't have permissions to access this dataset, abort");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
