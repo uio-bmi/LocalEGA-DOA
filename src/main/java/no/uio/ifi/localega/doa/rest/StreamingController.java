@@ -38,8 +38,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
+@RequestMapping("/files")
 @RestController
-public class LocalEGADOAController {
+public class StreamingController {
 
     @Autowired
     private MinioClient minioClient;
@@ -62,26 +63,23 @@ public class LocalEGADOAController {
     @Value("${crypt4gh.private-key-password-path}")
     private String crypt4ghPrivateKeyPasswordPath;
 
-    @GetMapping("/files/{fileId}")
+    @GetMapping("/{fileId}")
     public ResponseEntity<?> files(@RequestHeader(value = "Authorization") String token,
                                    @RequestHeader(value = "Public-Key", required = false) String publicKey,
                                    @PathVariable(value = "fileId") String fileId,
                                    @RequestParam(value = "destinationFormat", required = false) String destinationFormat,
                                    @RequestParam(value = "startCoordinate", required = false) String startCoordinate,
                                    @RequestParam(value = "endCoordinate", required = false) String endCoordinate) throws Exception {
-        if (StringUtils.isEmpty(token)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
         DecodedJWT decodedJWT = jwtVerifier.verify(token.replace("Bearer ", ""));
         String subject = decodedJWT.getSubject();
-        log.info("User {} is authenticated and attempting to download the file: {}", subject, fileId);
+        log.info("User {} is authenticated and is attempting to download the file: {}", subject, fileId);
         Set<String> datasetIds = Arrays.stream(decodedJWT.getClaim("authorities").asArray(String.class)).collect(Collectors.toSet());
         if (!checkPermissions(fileId, datasetIds)) {
             log.info("User doesn't have permissions to access this file, abort");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         log.info("User has permissions to access the file, initializing download");
-        LEGAFile file = fileRepository.findByFileId(fileId).orElseThrow(() -> new RuntimeException(String.format("File with ID %s doesn't exist", fileId)));
+        LEGAFile file = fileRepository.findById(fileId).orElseThrow(() -> new RuntimeException(String.format("File with ID %s doesn't exist", fileId)));
         byte[] header = Hex.decodeHex(file.getHeader());
         InputStream bodyInputStream = getFileInputStream(file);
         String password = FileUtils.readFileToString(new File(crypt4ghPrivateKeyPasswordPath), Charset.defaultCharset());
