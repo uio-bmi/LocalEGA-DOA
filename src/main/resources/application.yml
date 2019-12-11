@@ -21,7 +21,7 @@ s3:
   region: ${S3_REGION:us-west-1}
   bucket: ${S3_BUCKET:localega}
   secure: ${S3_SECURE:false}
-  root-ca: ${ROOT_CERT_PATH:/etc/ega/ssl/CA.cert}
+  root-ca: ${S3_ROOT_CERT_PATH:/etc/ssl/certs/ca-certificates.crt}
 
 jwt.public-key-path: ${JWT_PUBLIC_KEY_PATH:/etc/ega/jwt/key.pem}
 
