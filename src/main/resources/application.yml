@@ -3,7 +3,7 @@ logging.level.root: info
 server.ssl:
   key-store-type: PKCS12
   key-store: file:${KEYSTORE_PATH:/etc/ega/ssl/server.cert}
-  key-store-password: ${CERT_PASSWORD}
+  key-store-password: ${KEYSTORE_PASSWORD}
 
 spring:
   datasource:
@@ -15,13 +15,13 @@ spring:
 
 s3:
   endpoint: ${S3_ENDPOINT:vault}
-  port: ${S3_PORT:9000}
+  port: ${S3_PORT:443}
   access-key: ${S3_ACCESS_KEY:minio}
   secret-key: ${S3_SECRET_KEY:miniostorage}
   region: ${S3_REGION:us-west-1}
   bucket: ${S3_BUCKET:localega}
   secure: ${S3_SECURE:false}
-  root-ca: ${ROOT_CERT_PATH:/etc/ega/ssl/CA.cert}
+  root-ca: ${S3_ROOT_CERT_PATH:/etc/ssl/certs/ca-certificates.crt}
 
 jwt.public-key-path: ${JWT_PUBLIC_KEY_PATH:/etc/ega/jwt/key.pem}
 

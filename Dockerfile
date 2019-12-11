@@ -6,6 +6,8 @@ RUN mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -DskipDoc
 
 FROM openjdk:13-alpine
 
+RUN apk add --no-cache ca-certificates
+
 COPY --from=builder /target/*-SNAPSHOT.jar /localega-doa.jar
 
 RUN addgroup -g 1000 lega && \
