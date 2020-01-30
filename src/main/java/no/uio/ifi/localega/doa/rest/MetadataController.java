@@ -35,7 +35,8 @@ public class MetadataController {
         String subject = decodedJWT.getSubject();
         log.info("User {} is authenticated and is getting the list of datasets", subject);
         Set<String> datasetIds = Arrays.stream(decodedJWT.getClaim("authorities").asArray(String.class)).collect(Collectors.toSet());
-        return ResponseEntity.ok(datasetIds);
+        Collection<LEGADataset> datasets = datasetRepository.findByDatasetIdIn(datasetIds);
+        return ResponseEntity.ok(datasets.stream().map(LEGADataset::getDatasetId).collect(Collectors.toSet()));
     }
 
     @GetMapping("/datasets/{datasetId}/files")
@@ -50,8 +51,8 @@ public class MetadataController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         log.info("User has permissions to access this dataset, listing");
-        Collection<LEGADataset> datasets = datasetRepository.findByDatasetId(datasetId);
-        List<File> files = datasets
+        Optional<LEGADataset> dataset = datasetRepository.findByDatasetId(datasetId);
+        List<File> files = dataset
                 .stream()
                 .map(LEGADataset::getFileId)
                 .map(f -> fileRepository.findById(f))

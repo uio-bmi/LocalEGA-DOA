@@ -5,10 +5,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
+import java.util.Optional;
 
 @Repository
 public interface DatasetRepository extends JpaRepository<LEGADataset, String> {
 
-    Collection<LEGADataset> findByDatasetId(String datasetId);
+    Optional<LEGADataset> findByDatasetId(String datasetId);
+
+    Collection<LEGADataset> findByDatasetIdIn(Collection<String> datasetId);
 
 }
