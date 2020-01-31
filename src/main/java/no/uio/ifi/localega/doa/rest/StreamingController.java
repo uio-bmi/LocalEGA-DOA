@@ -139,12 +139,10 @@ public class StreamingController {
     }
 
     private boolean checkPermissions(String fileId, Set<String> datasetIds) {
-        for (String datasetId : datasetIds) {
-            Collection<LEGADataset> datasets = datasetRepository.findByDatasetId(datasetId);
-            for (LEGADataset dataset : datasets) {
-                if (dataset.getFileId().equalsIgnoreCase(fileId)) {
-                    return true;
-                }
+        Collection<LEGADataset> datasets = datasetRepository.findByDatasetIdIn(datasetIds);
+        for (LEGADataset dataset : datasets) {
+            if (dataset.getFileId().equalsIgnoreCase(fileId)) {
+                return true;
             }
         }
         return false;
