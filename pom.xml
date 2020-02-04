@@ -12,7 +12,7 @@
     <artifactId>localega-doa</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>localega-doa</name>
-    <description>Demo project for Spring Boot</description>
+    <description>LocalEGA Data Out API</description>
 
     <properties>
         <java.version>13</java.version>
@@ -83,7 +83,7 @@
         <repository>
             <id>central</id>
             <name>bintray</name>
-            <url>http://jcenter.bintray.com</url>
+            <url>https://jcenter.bintray.com</url>
         </repository>
     </repositories>
 
