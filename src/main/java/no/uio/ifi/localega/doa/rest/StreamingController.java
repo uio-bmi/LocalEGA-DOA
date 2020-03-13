@@ -1,7 +1,5 @@
 package no.uio.ifi.localega.doa.rest;
 
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import io.minio.MinioClient;
 import io.minio.errors.*;
 import lombok.extern.slf4j.Slf4j;
@@ -12,13 +10,13 @@ import no.uio.ifi.crypt4gh.pojo.header.X25519ChaCha20IETFPoly1305HeaderPacket;
 import no.uio.ifi.crypt4gh.stream.Crypt4GHInputStream;
 import no.uio.ifi.crypt4gh.util.Crypt4GHUtils;
 import no.uio.ifi.crypt4gh.util.KeyUtils;
+import no.uio.ifi.localega.doa.aspects.AAIAspect;
 import no.uio.ifi.localega.doa.dto.DestinationFormat;
 import no.uio.ifi.localega.doa.model.LEGADataset;
 import no.uio.ifi.localega.doa.model.LEGAFile;
 import no.uio.ifi.localega.doa.repositories.DatasetRepository;
 import no.uio.ifi.localega.doa.repositories.FileRepository;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
@@ -27,15 +25,14 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.xmlpull.v1.XmlPullParserException;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.math.BigInteger;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.*;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequestMapping("/files")
@@ -43,10 +40,10 @@ import java.util.stream.Collectors;
 public class StreamingController {
 
     @Autowired
-    private MinioClient minioClient;
+    protected HttpServletRequest request;
 
     @Autowired
-    private JWTVerifier jwtVerifier;
+    private MinioClient minioClient;
 
     @Autowired
     private FileRepository fileRepository;
@@ -63,26 +60,23 @@ public class StreamingController {
     @Value("${crypt4gh.private-key-password-path}")
     private String crypt4ghPrivateKeyPasswordPath;
 
+    @SuppressWarnings("unchecked")
     @GetMapping("/{fileId}")
-    public ResponseEntity<?> files(@RequestHeader(value = "Authorization") String token,
-                                   @RequestHeader(value = "Public-Key", required = false) String publicKey,
+    public ResponseEntity<?> files(@RequestHeader(value = "Public-Key", required = false) String publicKey,
                                    @PathVariable(value = "fileId") String fileId,
                                    @RequestParam(value = "destinationFormat", required = false) String destinationFormat,
                                    @RequestParam(value = "startCoordinate", required = false) String startCoordinate,
                                    @RequestParam(value = "endCoordinate", required = false) String endCoordinate) throws Exception {
-        DecodedJWT decodedJWT = jwtVerifier.verify(token.replace("Bearer ", ""));
-        String subject = decodedJWT.getSubject();
-        log.info("User {} is authenticated and is attempting to download the file: {}", subject, fileId);
-        Set<String> datasetIds = Arrays.stream(decodedJWT.getClaim("authorities").asArray(String.class)).collect(Collectors.toSet());
+        Set<String> datasetIds = (Set<String>) request.getAttribute(AAIAspect.DATASETS);
         if (!checkPermissions(fileId, datasetIds)) {
-            log.info("User doesn't have permissions to access this file, abort");
+            log.info("User doesn't have permissions to download requested file: {}", fileId);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        log.info("User has permissions to access the file, initializing download");
+        log.info("User has permissions to download requested file: {}", fileId);
         LEGAFile file = fileRepository.findById(fileId).orElseThrow(() -> new RuntimeException(String.format("File with ID %s doesn't exist", fileId)));
         byte[] header = Hex.decodeHex(file.getHeader());
         InputStream bodyInputStream = getFileInputStream(file);
-        String password = FileUtils.readFileToString(new File(crypt4ghPrivateKeyPasswordPath), Charset.defaultCharset());
+        String password = Files.readString(Path.of(crypt4ghPrivateKeyPasswordPath));
         PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File(crypt4ghPrivateKeyPath), password.toCharArray());
         if (DestinationFormat.CRYPT4GH.name().equalsIgnoreCase(destinationFormat)) {
             return getEncryptedResponse(file, header, bodyInputStream, privateKey, startCoordinate, endCoordinate, publicKey);

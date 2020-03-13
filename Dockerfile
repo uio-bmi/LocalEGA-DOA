@@ -8,7 +8,7 @@ FROM openjdk:13-alpine
 
 RUN apk add --no-cache ca-certificates
 
-COPY --from=builder /target/*-SNAPSHOT.jar /localega-doa.jar
+COPY --from=builder /target/localega-doa-*.jar /localega-doa.jar
 
 RUN addgroup -g 1000 lega && \
     adduser -D -u 1000 -G lega lega
