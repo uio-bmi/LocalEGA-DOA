@@ -1,8 +1,7 @@
 package no.uio.ifi.localega.doa.rest;
 
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.extern.slf4j.Slf4j;
+import no.uio.ifi.localega.doa.aspects.AAIAspect;
 import no.uio.ifi.localega.doa.dto.File;
 import no.uio.ifi.localega.doa.model.LEGADataset;
 import no.uio.ifi.localega.doa.repositories.DatasetRepository;
@@ -10,9 +9,16 @@ import no.uio.ifi.localega.doa.repositories.FileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.*;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -21,7 +27,7 @@ import java.util.stream.Collectors;
 public class MetadataController {
 
     @Autowired
-    private JWTVerifier jwtVerifier;
+    protected HttpServletRequest request;
 
     @Autowired
     private FileRepository fileRepository;
@@ -29,28 +35,24 @@ public class MetadataController {
     @Autowired
     private DatasetRepository datasetRepository;
 
+    @SuppressWarnings("unchecked")
     @GetMapping("/datasets")
-    public ResponseEntity<?> datasets(@RequestHeader(value = "Authorization") String token) {
-        DecodedJWT decodedJWT = jwtVerifier.verify(token.replace("Bearer ", ""));
-        String subject = decodedJWT.getSubject();
-        log.info("User {} is authenticated and is getting the list of datasets", subject);
-        Set<String> datasetIds = Arrays.stream(decodedJWT.getClaim("authorities").asArray(String.class)).collect(Collectors.toSet());
+    public ResponseEntity<?> datasets() {
+        log.info("User has permissions to list datasets");
+        Set<String> datasetIds = (Set<String>) request.getAttribute(AAIAspect.DATASETS);
         Collection<LEGADataset> datasets = datasetRepository.findByDatasetIdIn(datasetIds);
         return ResponseEntity.ok(datasets.stream().map(LEGADataset::getDatasetId).collect(Collectors.toSet()));
     }
 
+    @SuppressWarnings("unchecked")
     @GetMapping("/datasets/{datasetId}/files")
-    public ResponseEntity<?> files(@RequestHeader(value = "Authorization") String token,
-                                   @PathVariable(value = "datasetId") String datasetId) {
-        DecodedJWT decodedJWT = jwtVerifier.verify(token.replace("Bearer ", ""));
-        String subject = decodedJWT.getSubject();
-        log.info("User {} is authenticated and is attempting to list files of dataset {}", subject, datasetId);
-        Set<String> datasetIds = Arrays.stream(decodedJWT.getClaim("authorities").asArray(String.class)).collect(Collectors.toSet());
+    public ResponseEntity<?> files(@PathVariable(value = "datasetId") String datasetId) {
+        Set<String> datasetIds = (Set<String>) request.getAttribute(AAIAspect.DATASETS);
         if (!datasetIds.contains(datasetId)) {
-            log.info("User doesn't have permissions to access this dataset, abort");
+            log.info("User doesn't have permissions to list files in the requested dataset: {}", datasetId);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        log.info("User has permissions to access this dataset, listing");
+        log.info("User has permissions to list files in the requested dataset: {}", datasetId);
         Optional<LEGADataset> dataset = datasetRepository.findByDatasetId(datasetId);
         List<File> files = dataset
                 .stream()

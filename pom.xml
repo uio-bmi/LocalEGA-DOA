@@ -10,7 +10,7 @@
     </parent>
     <groupId>no.uio.ifi</groupId>
     <artifactId>localega-doa</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.2.0</version>
     <name>localega-doa</name>
     <description>LocalEGA Data Out API</description>
 
@@ -65,6 +65,11 @@
             <groupId>no.uio.ifi</groupId>
             <artifactId>crypt4gh</artifactId>
             <version>2.4.1</version>
+        </dependency>
+        <dependency>
+            <groupId>no.uio.ifi</groupId>
+            <artifactId>clearinghouse</artifactId>
+            <version>0.0.2</version>
         </dependency>
         <dependency>
             <groupId>net.logstash.logback</groupId>
