@@ -1,0 +1,31 @@
+version: '3.3'
+
+services:
+
+  db:
+    image: neicnordic/sda-db:latest
+    ports:
+      - 5432:5432
+    environment:
+      - DB_LEGA_IN_PASSWORD=password
+      - DB_LEGA_OUT_PASSWORD=password
+      - PG_SERVER_CERT=/etc/ega/pg.cert
+      - PG_SERVER_KEY=/etc/ega/pg.key
+      - PG_CA=/etc/ega/CA.cert
+      - PG_VERIFY_PEER=1
+    volumes:
+      - db:/ega
+      - ./test/rootCA.pem:/etc/ega/CA.cert
+      - ./test/localhost.pem:/etc/ega/pg.cert
+      - ./test/localhost-key.pem:/etc/ega/pg.key
+
+  mockauth:
+    image: cscfi/beacon-python
+    ports:
+      - 8000:8000
+    volumes:
+      - ./test/mock_auth.py:/mock_auth.py
+    entrypoint: ["python", "/mock_auth.py", "0.0.0.0", "8000"]
+
+volumes:
+  db:

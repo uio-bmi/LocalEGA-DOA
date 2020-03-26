@@ -70,7 +70,7 @@ public class StreamingController {
         Set<String> datasetIds = (Set<String>) request.getAttribute(AAIAspect.DATASETS);
         if (!checkPermissions(fileId, datasetIds)) {
             log.info("User doesn't have permissions to download requested file: {}", fileId);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         log.info("User has permissions to download requested file: {}", fileId);
         LEGAFile file = fileRepository.findById(fileId).orElseThrow(() -> new RuntimeException(String.format("File with ID %s doesn't exist", fileId)));
