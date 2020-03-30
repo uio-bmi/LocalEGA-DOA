@@ -1,8 +1,12 @@
-FROM maven:3.6.0-jdk-13-alpine as builder
+FROM maven:3.6.1-jdk-13-alpine as builder
 
-COPY . .
+COPY pom.xml .
 
-RUN mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -DskipDockerPush -DskipDockerBuild
+RUN mvn dependency:go-offline --no-transfer-progress
+
+COPY src/ /src/
+
+RUN mvn clean install -DskipTests --no-transfer-progress
 
 FROM openjdk:13-alpine
 

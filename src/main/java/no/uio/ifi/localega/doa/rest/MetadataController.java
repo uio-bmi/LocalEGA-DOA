@@ -50,7 +50,7 @@ public class MetadataController {
         Set<String> datasetIds = (Set<String>) request.getAttribute(AAIAspect.DATASETS);
         if (!datasetIds.contains(datasetId)) {
             log.info("User doesn't have permissions to list files in the requested dataset: {}", datasetId);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         log.info("User has permissions to list files in the requested dataset: {}", datasetId);
         Optional<LEGADataset> dataset = datasetRepository.findByDatasetId(datasetId);

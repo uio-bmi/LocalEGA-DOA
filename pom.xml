@@ -10,7 +10,7 @@
     </parent>
     <groupId>no.uio.ifi</groupId>
     <artifactId>localega-doa</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.1</version>
     <name>localega-doa</name>
     <description>LocalEGA Data Out API</description>
 
@@ -64,7 +64,7 @@
         <dependency>
             <groupId>no.uio.ifi</groupId>
             <artifactId>crypt4gh</artifactId>
-            <version>2.4.1</version>
+            <version>2.4.2</version>
         </dependency>
         <dependency>
             <groupId>no.uio.ifi</groupId>
@@ -80,12 +80,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.junit.vintage</groupId>
-                    <artifactId>junit-vintage-engine</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
     </dependencies>
 

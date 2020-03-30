@@ -13,7 +13,7 @@ public class File {
     private String datasetId;
     private String displayFileName;
     private String fileName;
-    private long fileSize;
+    private Long fileSize;
     private String unencryptedChecksum;
     private String unencryptedChecksumType;
     private String fileStatus;

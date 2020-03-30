@@ -41,7 +41,7 @@ public class LEGAFile {
     private String displayFileName;
 
     @Column(name = "file_size", insertable = false, updatable = false)
-    private long fileSize;
+    private Long fileSize;
 
     @Size(max = 128)
     @Column(insertable = false, updatable = false, length = 128)
