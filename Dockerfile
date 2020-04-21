@@ -10,13 +10,19 @@ RUN mvn clean install -DskipTests --no-transfer-progress
 
 FROM openjdk:13-alpine
 
-RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache ca-certificates openssl
 
 COPY --from=builder /target/localega-doa-*.jar /localega-doa.jar
+
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 RUN addgroup -g 1000 lega && \
     adduser -D -u 1000 -G lega lega
 
 USER 1000
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 CMD ["java", "-jar", "/localega-doa.jar"]
