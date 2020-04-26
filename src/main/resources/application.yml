@@ -24,6 +24,9 @@ s3:
   secure: ${S3_SECURE:true}
   root-ca: ${S3_ROOT_CERT_PATH:/etc/ssl/certs/ca-certificates.crt}
 
+archive:
+  path: ${ARCHIVE_PATH:/}
+
 ga4gh:
   passport:
     # First, the public key is checked. If present, it's used for validating the token and openid-configuration-url is not used.
@@ -33,6 +36,7 @@ ga4gh:
   visa:
     # First, the public key is checked. If present, it's used for validating the token. Otherwise, JKU is used instead (entry in the header).
     public-key-path: ${VISA_PUBLIC_KEY_PATH:/etc/ega/jwt/visa.pem}
+
 
 crypt4gh:
   private-key-path: ${CRYPT4GH_PRIVATE_KEY_PATH:/etc/ega/crypt4gh/key.pem}

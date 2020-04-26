@@ -60,7 +60,11 @@ public class StreamingController {
     @Value("${crypt4gh.private-key-password-path}")
     private String crypt4ghPrivateKeyPasswordPath;
 
+    @Value("${archive.path}")
+    private String archivePath;
+
     @SuppressWarnings("unchecked")
+
     @GetMapping("/{fileId}")
     public ResponseEntity<?> files(@RequestHeader(value = "Public-Key", required = false) String publicKey,
                                    @PathVariable(value = "fileId") String fileId,
@@ -124,11 +128,20 @@ public class StreamingController {
 
     private InputStream getFileInputStream(LEGAFile file) throws IOException, InvalidKeyException, NoSuchAlgorithmException, InsufficientDataException, InvalidArgumentException, InvalidResponseException, InternalException, NoResponseException, InvalidBucketNameException, XmlPullParserException, ErrorResponseException {
         String filePath = file.getFilePath();
+        String processedPath = filePath;
+        String tempPath = "";
         try { // S3
             BigInteger s3FileId = new BigInteger(filePath);
             return minioClient.getObject(s3Bucket, s3FileId.toString());
         } catch (NumberFormatException e) { // filesystem
-            return Files.newInputStream(new File(filePath).toPath());
+            if (archivePath == "/") {
+                processedPath = filePath;
+            } else if (archivePath.endsWith("/")) {
+                tempPath = archivePath.substring(0, archivePath.length() - 1);
+                processedPath = tempPath.concat(filePath);
+            }
+            log.info("Archive path is: {}", processedPath);
+            return Files.newInputStream(new File(processedPath).toPath());
         }
     }
 
