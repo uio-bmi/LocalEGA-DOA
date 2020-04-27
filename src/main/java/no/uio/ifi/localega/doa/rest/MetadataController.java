@@ -53,8 +53,8 @@ public class MetadataController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         log.info("User has permissions to list files in the requested dataset: {}", datasetId);
-        Optional<LEGADataset> dataset = datasetRepository.findByDatasetId(datasetId);
-        List<File> files = dataset
+        Collection<LEGADataset> datasets = datasetRepository.findByDatasetId(datasetId);
+        List<File> files = datasets
                 .stream()
                 .map(LEGADataset::getFileId)
                 .map(f -> fileRepository.findById(f))

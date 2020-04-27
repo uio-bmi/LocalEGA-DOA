@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface DatasetRepository extends JpaRepository<LEGADataset, String> {
 
-    Optional<LEGADataset> findByDatasetId(String datasetId);
+    Collection<LEGADataset> findByDatasetId(String datasetId);
 
     Collection<LEGADataset> findByDatasetIdIn(Collection<String> datasetId);
 
