@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * POJO describing the file, returned by the <code>MetadataController</code>.
+ */
 @NoArgsConstructor
 @AllArgsConstructor
 @Data

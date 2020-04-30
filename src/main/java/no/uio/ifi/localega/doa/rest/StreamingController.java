@@ -34,6 +34,9 @@ import java.security.*;
 import java.util.Collection;
 import java.util.Set;
 
+/**
+ * REST controller incorporating streaming-related endpoints.
+ */
 @Slf4j
 @RequestMapping("/files")
 @RestController
@@ -63,8 +66,18 @@ public class StreamingController {
     @Value("${archive.path}")
     private String archivePath;
 
+    /**
+     * Streams the requested file.
+     *
+     * @param publicKey         Optional public key, if the re-encryption was requested.
+     * @param fileId            ID of the file to stream.
+     * @param destinationFormat Destination format.
+     * @param startCoordinate   Start byte.
+     * @param endCoordinate     End byte.
+     * @return File-stream.
+     * @throws Exception In case of some error.
+     */
     @SuppressWarnings("unchecked")
-
     @GetMapping("/{fileId}")
     public ResponseEntity<?> files(@RequestHeader(value = "Public-Key", required = false) String publicKey,
                                    @PathVariable(value = "fileId") String fileId,

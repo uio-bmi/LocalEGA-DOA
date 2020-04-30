@@ -21,6 +21,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * REST controller incorporating metadata-related endpoints.
+ */
 @Slf4j
 @RequestMapping("/metadata")
 @RestController
@@ -35,6 +38,11 @@ public class MetadataController {
     @Autowired
     private DatasetRepository datasetRepository;
 
+    /**
+     * Lists datasets.
+     *
+     * @return List of datasets.
+     */
     @SuppressWarnings("unchecked")
     @GetMapping("/datasets")
     public ResponseEntity<?> datasets() {
@@ -44,6 +52,12 @@ public class MetadataController {
         return ResponseEntity.ok(datasets.stream().map(LEGADataset::getDatasetId).collect(Collectors.toSet()));
     }
 
+    /**
+     * Lists files in the dataset.
+     *
+     * @param datasetId Dataset ID.
+     * @return List of files in the dataset.
+     */
     @SuppressWarnings("unchecked")
     @GetMapping("/datasets/{datasetId}/files")
     public ResponseEntity<?> files(@PathVariable(value = "datasetId") String datasetId) {
