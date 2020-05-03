@@ -13,6 +13,9 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
 
+/**
+ * Model-POJO for Hibernate/Spring Data, describes LocalEGA file.
+ */
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
 @Entity
 @Immutable

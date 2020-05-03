@@ -24,6 +24,9 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Spring Boot main file containing the application entry-point and all necessary Spring beans configuration.
+ */
 @Slf4j
 @SpringBootApplication
 public class LocalEGADOAApplication {
@@ -49,10 +52,23 @@ public class LocalEGADOAApplication {
     @Value("${s3.root-ca}")
     private String s3RootCA;
 
+    /**
+     * Spring boot entry-point.
+     *
+     * @param args Command-line arguments.
+     */
     public static void main(String[] args) {
         SpringApplication.run(LocalEGADOAApplication.class, args);
     }
 
+    /**
+     * Minio Client Spring bean.
+     *
+     * @return <code>MinioClient</code>
+     * @throws InvalidPortException     In case of invalid port.
+     * @throws InvalidEndpointException In case of invalid endpoint.
+     * @throws GeneralSecurityException In case of SSL/TLS related errors.
+     */
     @Bean
     public MinioClient minioClient() throws InvalidPortException, InvalidEndpointException, GeneralSecurityException {
         Optional<OkHttpClient> optionalOkHttpClient = buildOkHttpClient();

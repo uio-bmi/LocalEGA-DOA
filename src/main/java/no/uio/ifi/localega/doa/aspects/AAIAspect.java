@@ -24,6 +24,9 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * AOP aspect that handles authentication and authorization.
+ */
 @Slf4j
 @Aspect
 @Component
@@ -43,6 +46,13 @@ public class AAIAspect {
     @Autowired
     protected HttpServletRequest request;
 
+    /**
+     * Retrieves GA4GH Visas from the JWT token provided. Decides on whether to allow the request or not.
+     *
+     * @param joinPoint Join point referencing proxied method.
+     * @return Either the object, returned by the proxied method, or HTTP error response.
+     * @throws Throwable In case of error.
+     */
     @Around("execution(public * no.uio.ifi.localega.doa.rest.*.*(..))")
     public Object authenticate(ProceedingJoinPoint joinPoint) throws Throwable {
         try {
