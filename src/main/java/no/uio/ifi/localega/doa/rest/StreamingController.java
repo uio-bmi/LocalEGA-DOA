@@ -141,17 +141,18 @@ public class StreamingController {
 
     private InputStream getFileInputStream(LEGAFile file) throws IOException, InvalidKeyException, NoSuchAlgorithmException, InsufficientDataException, InvalidArgumentException, InvalidResponseException, InternalException, NoResponseException, InvalidBucketNameException, XmlPullParserException, ErrorResponseException {
         String filePath = file.getFilePath();
-        String processedPath = filePath;
-        String tempPath = "";
         try { // S3
             BigInteger s3FileId = new BigInteger(filePath);
             return minioClient.getObject(s3Bucket, s3FileId.toString());
         } catch (NumberFormatException e) { // filesystem
-            if (archivePath == "/") {
+            String processedPath;
+            if ("/".equalsIgnoreCase(archivePath)) {
                 processedPath = filePath;
             } else if (archivePath.endsWith("/")) {
-                tempPath = archivePath.substring(0, archivePath.length() - 1);
-                processedPath = tempPath.concat(filePath);
+                String tempPath = archivePath.substring(0, archivePath.length() - 1);
+                processedPath = tempPath + filePath;
+            } else {
+                processedPath = archivePath + filePath;
             }
             log.info("Archive path is: {}", processedPath);
             return Files.newInputStream(new File(processedPath).toPath());
