@@ -80,6 +80,7 @@ public class AAIAspect {
             request.setAttribute(DATASETS, datasets);
             return joinPoint.proceed();
         } catch (Exception e) {
+            log.info(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
