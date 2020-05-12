@@ -15,10 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -49,7 +46,7 @@ public class MetadataController {
         log.info("User has permissions to list datasets");
         Set<String> datasetIds = (Set<String>) request.getAttribute(AAIAspect.DATASETS);
         Collection<LEGADataset> datasets = datasetRepository.findByDatasetIdIn(datasetIds);
-        return ResponseEntity.ok(datasets.stream().map(LEGADataset::getDatasetId).collect(Collectors.toSet()));
+        return ResponseEntity.ok(datasets.stream().filter(Objects::nonNull).map(LEGADataset::getDatasetId).collect(Collectors.toSet()));
     }
 
     /**
@@ -70,6 +67,7 @@ public class MetadataController {
         Collection<LEGADataset> datasets = datasetRepository.findByDatasetId(datasetId);
         List<File> files = datasets
                 .stream()
+                .filter(Objects::nonNull)
                 .map(LEGADataset::getFileId)
                 .map(f -> fileRepository.findById(f))
                 .flatMap(Optional::stream)
