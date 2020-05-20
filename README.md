@@ -15,6 +15,7 @@ Environment variables used:
 | DB_INSTANCE                        | db                                                                   | Database hostname                                  |
 | DB_PORT                            | 5432                                                                 | Database port                                      |
 | POSTGRES_DB                        | lega                                                                 | Database name                                      |
+| SSL_MODE                           | verify-full                                                          | SSL mode for DB connectivity                       |
 | ROOT_CERT_PATH                     | /etc/ega/ssl/CA.cert                                                 | Path to the CA file for database connectivity      |
 | CERT_PATH                          | /etc/ega/ssl/client.cert                                             | Path to the client cert for database connectivity  |
 | CERT_KEY                           | /etc/ega/ssl/client.key                                              | Path to the client key for database connectivity   |
