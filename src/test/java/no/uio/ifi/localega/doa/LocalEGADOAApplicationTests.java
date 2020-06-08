@@ -1,5 +1,8 @@
 package no.uio.ifi.localega.doa;
 
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.ConnectionFactory;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
@@ -9,8 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.crypt4gh.stream.Crypt4GHInputStream;
 import no.uio.ifi.crypt4gh.util.KeyUtils;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -20,12 +25,17 @@ import org.springframework.http.HttpStatus;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.PrivateKey;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.util.Properties;
+import java.util.UUID;
 
 @Slf4j
 @RunWith(JUnit4.class)
@@ -76,6 +86,15 @@ class LocalEGADOAApplicationTests {
         JSONArray tokens = Unirest.get("http://localhost:8000/tokens").asJson().getBody().getArray();
         validToken = tokens.getString(0);
         invalidToken = tokens.getString(1);
+    }
+
+    @SneakyThrows
+    @AfterEach
+    public void tearDown() {
+        File exportFolder = new File("requester@elixir-europe.org");
+        if (exportFolder.exists() && exportFolder.isDirectory()) {
+            FileUtils.deleteDirectory(exportFolder);
+        }
     }
 
     @Test
@@ -190,6 +209,64 @@ class LocalEGADOAApplicationTests {
             byte[] bytes = IOUtils.toByteArray(crypt4GHInputStream);
             Assert.assertEquals("09fbeae7cce2cd410b471b0a1a265fb53dc54c66c4c7c3111b8b9b95ac0e956f", DigestUtils.sha256Hex(bytes));
         }
+    }
+
+    @SneakyThrows
+    @Test
+    void testExportRequestFileValidToken() {
+        export("EGAF00000000014", false);
+        PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/my.sec.pem"), "passw0rd".toCharArray());
+        try (InputStream byteArrayInputStream = new FileInputStream("requester@elixir-europe.org/files/test/body.enc");
+             Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(byteArrayInputStream, privateKey)) {
+            byte[] bytes = IOUtils.toByteArray(crypt4GHInputStream);
+            Assert.assertEquals("2aef808fb42fa7b1ba76cb16644773f9902a3fdc2569e8fdc049f38280c4577e", DigestUtils.sha256Hex(bytes));
+        }
+    }
+
+    @SneakyThrows
+    @Test
+    void testExportRequestDatasetValidToken() {
+        export("EGAD00010000919", true);
+        PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/my.sec.pem"), "passw0rd".toCharArray());
+        try (InputStream byteArrayInputStream = new FileInputStream("requester@elixir-europe.org/files/test/body.enc");
+             Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(byteArrayInputStream, privateKey)) {
+            byte[] bytes = IOUtils.toByteArray(crypt4GHInputStream);
+            Assert.assertEquals("2aef808fb42fa7b1ba76cb16644773f9902a3fdc2569e8fdc049f38280c4577e", DigestUtils.sha256Hex(bytes));
+        }
+    }
+
+    @SneakyThrows
+    void export(String id, boolean dataset) {
+        String mqConnectionString = "amqps://admin:guest@localhost:5671/%2F";
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setUri(mqConnectionString);
+        com.rabbitmq.client.Connection connectionFactory = factory.newConnection();
+        Channel channel = connectionFactory.createChannel();
+        AMQP.BasicProperties properties = new AMQP.BasicProperties()
+                .builder()
+                .deliveryMode(2)
+                .contentType("application/json")
+                .contentEncoding(StandardCharsets.UTF_8.displayName())
+                .correlationId(UUID.randomUUID().toString())
+                .build();
+
+        String message = String.format("{\n" +
+                        "\t\"jwtToken\" : \"%s\",\n" +
+                        "\t\"%s\": \"%s\",\n" +
+                        "\t\"publicKey\": \"%s\"\n" +
+                        "}",
+                validToken,
+                dataset ? "datasetId" : "fileId",
+                id,
+                FileUtils.readFileToString(new File("test/my.pub.pem"), Charset.defaultCharset()));
+        channel.basicPublish("",
+                "exportRequests",
+                properties,
+                message.getBytes());
+
+        channel.close();
+        connectionFactory.close();
+        Thread.sleep(1000 * 3);
     }
 
 }

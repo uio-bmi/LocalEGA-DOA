@@ -2,10 +2,7 @@ package no.uio.ifi.localega.doa.rest;
 
 import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.localega.doa.aspects.AAIAspect;
-import no.uio.ifi.localega.doa.dto.File;
-import no.uio.ifi.localega.doa.model.LEGADataset;
-import no.uio.ifi.localega.doa.repositories.DatasetRepository;
-import no.uio.ifi.localega.doa.repositories.FileRepository;
+import no.uio.ifi.localega.doa.services.MetadataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
@@ -16,8 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 /**
  * REST controller incorporating metadata-related endpoints.
@@ -32,10 +28,7 @@ public class MetadataController {
     protected HttpServletRequest request;
 
     @Autowired
-    private FileRepository fileRepository;
-
-    @Autowired
-    private DatasetRepository datasetRepository;
+    private MetadataService metadataService;
 
     /**
      * Lists datasets.
@@ -47,8 +40,7 @@ public class MetadataController {
     public ResponseEntity<?> datasets() {
         log.info("User has permissions to list datasets");
         Set<String> datasetIds = (Set<String>) request.getAttribute(AAIAspect.DATASETS);
-        Collection<LEGADataset> datasets = datasetRepository.findByDatasetIdIn(datasetIds);
-        return ResponseEntity.ok(datasets.stream().filter(Objects::nonNull).map(LEGADataset::getDatasetId).collect(Collectors.toSet()));
+        return ResponseEntity.ok(metadataService.datasets(datasetIds));
     }
 
     /**
@@ -66,27 +58,7 @@ public class MetadataController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         log.info("User has permissions to list files in the requested dataset: {}", datasetId);
-        Collection<LEGADataset> datasets = datasetRepository.findByDatasetId(datasetId);
-        List<File> files = datasets
-                .stream()
-                .filter(Objects::nonNull)
-                .map(LEGADataset::getFileId)
-                .map(f -> fileRepository.findById(f))
-                .flatMap(Optional::stream)
-                .map(f -> {
-                    File file = new File();
-                    file.setFileId(f.getFileId());
-                    file.setDatasetId(datasetId);
-                    file.setDisplayFileName(f.getDisplayFileName());
-                    file.setFileName(f.getFileName());
-                    file.setFileSize(f.getFileSize());
-                    file.setUnencryptedChecksum(f.getUnencryptedChecksum());
-                    file.setUnencryptedChecksumType(f.getUnencryptedChecksumType());
-                    file.setFileStatus(f.getFileStatus());
-                    return file;
-                })
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(files);
+        return ResponseEntity.ok(metadataService.files(datasetId));
     }
 
 }

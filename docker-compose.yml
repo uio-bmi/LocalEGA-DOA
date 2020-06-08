@@ -40,6 +40,25 @@ services:
       - ./test/mock_auth.py:/mock_auth.py
     entrypoint: ["python", "/mock_auth.py", "0.0.0.0", "8000"]
 
+  private-mq:
+    image: uiobmi/localega-broker-private:latest
+    ports:
+      - 5671:5671
+      - 15671:15671
+    environment:
+      - SSL_VERIFY=verify_peer
+      - SSL_FAIL_IF_NO_PEER_CERT=false
+      - SSL_DEPTH=2
+      - USER_NAME=admin
+      - PASSWORD_HASH=4tHURqDiZzypw0NTvoHhpn8/MMgONWonWxgRZ4NXgR8nZRBz
+    secrets:
+      - source: server.pem
+        target: /etc/rabbitmq/ssl.cert
+      - source: server-key.pem
+        target: /etc/rabbitmq/ssl.key
+      - source: rootCA.pem
+        target: /etc/rabbitmq/CA.cert
+
 volumes:
   db:
 

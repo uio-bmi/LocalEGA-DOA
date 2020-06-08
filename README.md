@@ -13,6 +13,13 @@ Environment variables used:
 | SSL_ENABLED                        | true                                                                 | Enables/disables TLS for DOA REST endpoints        |
 | KEYSTORE_PATH                      | /etc/ega/ssl/server.cert                                             | Path to server keystore file                       |
 | KEYSTORE_PASSWORD                  |                                                                      | Password for the keystore                          |
+| OUTBOX_ENABLED                     | true                                                                 | Enables/disables the outbox functionality          |
+| OUTBOX_QUEUE                       | exportRequests                                                       | MQ queue name for files/datasets export requests   |
+| OUTBOX_LOCATION                    | /ega/outbox/p11-%s/files/                                            | POSIX outbox location                              |
+| BROKER_HOST                        | public-mq                                                            | Public RabbitMQ broker hostname                    |
+| BROKER_PORT                        | 5671                                                                 | Public RabbitMQ broker port                        |
+| BROKER_VHOST                       | /                                                                    | Public RabbitMQ broker virtual host                |
+| BROKER_VALIDATE                    | true                                                                 | Validate server MQ certificate or not              |
 | DB_INSTANCE                        | db                                                                   | Database hostname                                  |
 | DB_PORT                            | 5432                                                                 | Database port                                      |
 | POSTGRES_DB                        | lega                                                                 | Database name                                      |
