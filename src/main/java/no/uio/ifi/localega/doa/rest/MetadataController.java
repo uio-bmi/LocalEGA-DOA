@@ -7,6 +7,7 @@ import no.uio.ifi.localega.doa.model.LEGADataset;
 import no.uio.ifi.localega.doa.repositories.DatasetRepository;
 import no.uio.ifi.localega.doa.repositories.FileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
  * REST controller incorporating metadata-related endpoints.
  */
 @Slf4j
+@ConditionalOnProperty("rest.enabled")
 @RequestMapping("/metadata")
 @RestController
 public class MetadataController {

@@ -9,6 +9,7 @@ Environment variables used:
 
 | Variable name                      | Default value                                                        | Description                                        |
 |------------------------------------|----------------------------------------------------------------------|----------------------------------------------------|
+| REST_ENABLED                       | true                                                                 | Enables/disables REST endpoints of DOA             |
 | SSL_ENABLED                        | true                                                                 | Enables/disables TLS for DOA REST endpoints        |
 | KEYSTORE_PATH                      | /etc/ega/ssl/server.cert                                             | Path to server keystore file                       |
 | KEYSTORE_PASSWORD                  |                                                                      | Password for the keystore                          |

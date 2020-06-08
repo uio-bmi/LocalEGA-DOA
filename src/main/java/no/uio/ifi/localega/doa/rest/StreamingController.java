@@ -19,6 +19,7 @@ import no.uio.ifi.localega.doa.repositories.FileRepository;
 import org.apache.commons.codec.binary.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.*;
 import org.springframework.util.StringUtils;
@@ -38,6 +39,7 @@ import java.util.Set;
  * REST controller incorporating streaming-related endpoints.
  */
 @Slf4j
+@ConditionalOnProperty("rest.enabled")
 @RequestMapping("/files")
 @RestController
 public class StreamingController {

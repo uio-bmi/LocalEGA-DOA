@@ -1,5 +1,7 @@
 logging.level.root: info
 
+rest.enabled: ${REST_ENABLED:true}
+
 server.ssl:
   enabled: ${SSL_ENABLED:true}
   key-store-type: PKCS12
