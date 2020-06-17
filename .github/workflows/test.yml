@@ -55,9 +55,7 @@ jobs:
         run: echo '::set-env name=OUTBOX_LOCATION::'$PWD'/%s/files/'
 
       - name: Spring Boot Run
-        run: |
-          echo OUTBOX_LOCATION
-          nohup mvn spring-boot:run --no-transfer-progress > nohup.out &
+        run: nohup mvn spring-boot:run --no-transfer-progress > nohup.out &
 
       - name: Wait for app to start
         run: |
