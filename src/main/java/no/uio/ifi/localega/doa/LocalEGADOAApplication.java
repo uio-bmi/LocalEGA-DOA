@@ -5,6 +5,7 @@ import io.minio.errors.InvalidEndpointException;
 import io.minio.errors.InvalidPortException;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -19,10 +20,7 @@ import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Spring Boot main file containing the application entry-point and all necessary Spring beans configuration.
@@ -31,34 +29,30 @@ import java.util.UUID;
 @SpringBootApplication
 public class LocalEGADOAApplication {
 
-    @Value("${s3.endpoint}")
-    private String s3Endpoint;
-
-    @Value("${s3.port}")
-    private int s3Port;
-
-    @Value("${s3.access-key}")
-    private String s3AccessKey;
-
-    @Value("${s3.secret-key}")
-    private String s3SecretKey;
-
-    @Value("${s3.region}")
-    private String s3Region;
-
-    @Value("${s3.secure}")
-    private boolean s3Secure;
-
-    @Value("${s3.root-ca}")
-    private String s3RootCA;
-
     /**
      * Spring boot entry-point.
      *
      * @param args Command-line arguments.
      */
     public static void main(String[] args) {
-        SpringApplication.run(LocalEGADOAApplication.class, args);
+        SpringApplication application = new SpringApplication(LocalEGADOAApplication.class);
+
+        Properties properties = new Properties();
+        String rootCertPath = System.getenv("ROOT_CERT_PATH");
+        String rootCertPass = System.getenv("ROOT_CERT_PASSWORD");
+        if (StringUtils.isNotEmpty(rootCertPath) && StringUtils.isNotEmpty(rootCertPass)) {
+            properties.put("spring.rabbitmq.ssl.trust-store", "file:" + rootCertPath);
+            properties.put("spring.rabbitmq.ssl.trust-store-password", rootCertPass);
+        }
+        String clientCertPath = System.getenv("CLIENT_CERT_PATH");
+        String clientCertPass = System.getenv("CLIENT_CERT_PASSWORD");
+        if (StringUtils.isNotEmpty(clientCertPath) && StringUtils.isNotEmpty(clientCertPass)) {
+            properties.put("spring.rabbitmq.ssl.key-store", "file:" + clientCertPath);
+            properties.put("spring.rabbitmq.ssl.key-store-password", clientCertPass);
+        }
+        application.setDefaultProperties(properties);
+
+        application.run(args);
     }
 
     /**
@@ -70,12 +64,18 @@ public class LocalEGADOAApplication {
      * @throws GeneralSecurityException In case of SSL/TLS related errors.
      */
     @Bean
-    public MinioClient minioClient() throws InvalidPortException, InvalidEndpointException, GeneralSecurityException {
-        Optional<OkHttpClient> optionalOkHttpClient = buildOkHttpClient();
+    public MinioClient minioClient(@Value("${s3.endpoint}") String s3Endpoint,
+                                   @Value("${s3.port}") int s3Port,
+                                   @Value("${s3.access-key}") String s3AccessKey,
+                                   @Value("${s3.secret-key}") String s3SecretKey,
+                                   @Value("${s3.region}") String s3Region,
+                                   @Value("${s3.secure}") boolean s3Secure,
+                                   @Value("${s3.root-ca}") String s3RootCA) throws InvalidPortException, InvalidEndpointException, GeneralSecurityException {
+        Optional<OkHttpClient> optionalOkHttpClient = buildOkHttpClient(s3RootCA);
         return new MinioClient(s3Endpoint, s3Port, s3AccessKey, s3SecretKey, s3Region, s3Secure, optionalOkHttpClient.orElse(null));
     }
 
-    private Optional<OkHttpClient> buildOkHttpClient() throws GeneralSecurityException {
+    private Optional<OkHttpClient> buildOkHttpClient(String s3RootCA) throws GeneralSecurityException {
         try {
             X509TrustManager trustManager = trustManagerForCertificates(Files.newInputStream(Path.of(s3RootCA)));
             SSLContext sslContext = SSLContext.getInstance("TLS");
