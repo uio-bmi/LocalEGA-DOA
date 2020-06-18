@@ -15,10 +15,10 @@ Environment variables used:
 | KEYSTORE_PASSWORD                  |                                                                      | Password for the keystore                          |
 | OUTBOX_ENABLED                     | true                                                                 | Enables/disables the outbox functionality          |
 | OUTBOX_QUEUE                       | exportRequests                                                       | MQ queue name for files/datasets export requests   |
-| OUTBOX_LOCATION                    | /ega/outbox/p11-%s/files/                                            | POSIX outbox location                              |
-| BROKER_HOST                        | public-mq                                                            | Public RabbitMQ broker hostname                    |
-| BROKER_PORT                        | 5671                                                                 | Public RabbitMQ broker port                        |
-| BROKER_VHOST                       | /                                                                    | Public RabbitMQ broker virtual host                |
+| OUTBOX_LOCATION                    | /ega/outbox/p11-%s/files/                                            | Outbox location with placeholder for the username  |
+| BROKER_HOST                        | private-mq                                                           | Local RabbitMQ broker hostname                    |
+| BROKER_PORT                        | 5671                                                                 | Local RabbitMQ broker port                        |
+| BROKER_VHOST                       | /                                                                    | Local RabbitMQ broker virtual host                |
 | BROKER_VALIDATE                    | true                                                                 | Validate server MQ certificate or not              |
 | DB_INSTANCE                        | db                                                                   | Database hostname                                  |
 | DB_PORT                            | 5432                                                                 | Database port                                      |
