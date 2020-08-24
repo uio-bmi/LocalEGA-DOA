@@ -11,7 +11,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.Size;
 
 /**
  * Model-POJO for Hibernate/Spring Data, describes LocalEGA dataset.
@@ -27,11 +26,9 @@ import javax.validation.constraints.Size;
 public class LEGADataset {
 
     @Id
-    @Size(max = 128)
     @Column(name = "file_id", insertable = false, updatable = false, length = 128)
     private String fileId;
 
-    @Size(max = 128)
     @Column(name = "dataset_id", insertable = false, updatable = false, length = 128)
     private String datasetId;
 
