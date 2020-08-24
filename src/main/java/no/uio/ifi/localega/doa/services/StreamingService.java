@@ -1,5 +1,6 @@
 package no.uio.ifi.localega.doa.services;
 
+import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
 import io.minio.errors.*;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.xmlpull.v1.XmlPullParserException;
 
 import javax.security.auth.message.AuthException;
 import java.io.*;
@@ -118,11 +118,11 @@ public class StreamingService {
         return new SequenceInputStream(headerInputStream, bodyInputStream);
     }
 
-    private InputStream getFileInputStream(LEGAFile file) throws IOException, InvalidKeyException, NoSuchAlgorithmException, InsufficientDataException, InvalidArgumentException, InvalidResponseException, InternalException, NoResponseException, InvalidBucketNameException, XmlPullParserException, ErrorResponseException {
+    private InputStream getFileInputStream(LEGAFile file) throws IOException, InvalidKeyException, NoSuchAlgorithmException, InsufficientDataException, InvalidResponseException, InternalException, InvalidBucketNameException, ErrorResponseException, ServerException, XmlParserException {
         String filePath = file.getFilePath();
         try { // S3
             BigInteger s3FileId = new BigInteger(filePath);
-            return minioClient.getObject(s3Bucket, s3FileId.toString());
+            return minioClient.getObject(GetObjectArgs.builder().bucket(s3Bucket).object(s3FileId.toString()).build());
         } catch (NumberFormatException e) { // filesystem
             String processedPath;
             if ("/".equalsIgnoreCase(archivePath)) {
