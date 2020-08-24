@@ -1,8 +1,7 @@
 package no.uio.ifi.localega.doa;
 
 import io.minio.MinioClient;
-import io.minio.errors.InvalidEndpointException;
-import io.minio.errors.InvalidPortException;
+import io.minio.errors.*;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
@@ -19,6 +18,7 @@ import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.*;
 
@@ -56,23 +56,43 @@ public class LocalEGADOAApplication {
     }
 
     /**
-     * Minio Client Spring bean.
+     * Archive Minio Client Spring bean.
      *
      * @return <code>MinioClient</code>
-     * @throws InvalidPortException     In case of invalid port.
-     * @throws InvalidEndpointException In case of invalid endpoint.
      * @throws GeneralSecurityException In case of SSL/TLS related errors.
      */
     @Bean
-    public MinioClient minioClient(@Value("${s3.endpoint}") String s3Endpoint,
+    public MinioClient archiveClient(@Value("${s3.endpoint}") String s3Endpoint,
                                    @Value("${s3.port}") int s3Port,
                                    @Value("${s3.access-key}") String s3AccessKey,
                                    @Value("${s3.secret-key}") String s3SecretKey,
                                    @Value("${s3.region}") String s3Region,
                                    @Value("${s3.secure}") boolean s3Secure,
-                                   @Value("${s3.root-ca}") String s3RootCA) throws InvalidPortException, InvalidEndpointException, GeneralSecurityException {
+                                   @Value("${s3.root-ca}") String s3RootCA) throws GeneralSecurityException, ServerException, InsufficientDataException, InternalException, IOException, InvalidResponseException, InvalidBucketNameException, XmlParserException, ErrorResponseException, RegionConflictException {
+        MinioClient.Builder builder = MinioClient.builder().endpoint(s3Endpoint, s3Port, s3Secure).region(s3Region).credentials(s3AccessKey, s3SecretKey);
         Optional<OkHttpClient> optionalOkHttpClient = buildOkHttpClient(s3RootCA);
-        return new MinioClient(s3Endpoint, s3Port, s3AccessKey, s3SecretKey, s3Region, s3Secure, optionalOkHttpClient.orElse(null));
+        optionalOkHttpClient.ifPresent(builder::httpClient);
+        return builder.build();
+    }
+
+    /**
+     * Outbox Minio Client Spring bean.
+     *
+     * @return <code>MinioClient</code>
+     * @throws GeneralSecurityException In case of SSL/TLS related errors.
+     */
+    @Bean
+    public MinioClient outboxClient(@Value("${s3.out.endpoint}") String s3Endpoint,
+                                    @Value("${s3.out.port}") int s3Port,
+                                    @Value("${s3.out.access-key}") String s3AccessKey,
+                                    @Value("${s3.out.secret-key}") String s3SecretKey,
+                                    @Value("${s3.out.region}") String s3Region,
+                                    @Value("${s3.out.secure}") boolean s3Secure,
+                                    @Value("${s3.out.root-ca}") String s3RootCA) throws GeneralSecurityException, ServerException, InsufficientDataException, InternalException, IOException, InvalidResponseException, InvalidBucketNameException, XmlParserException, ErrorResponseException, RegionConflictException {
+        MinioClient.Builder builder = MinioClient.builder().endpoint(s3Endpoint, s3Port, s3Secure).region(s3Region).credentials(s3AccessKey, s3SecretKey);
+        Optional<OkHttpClient> optionalOkHttpClient = buildOkHttpClient(s3RootCA);
+        optionalOkHttpClient.ifPresent(builder::httpClient);
+        return builder.build();
     }
 
     private Optional<OkHttpClient> buildOkHttpClient(String s3RootCA) throws GeneralSecurityException {
@@ -81,8 +101,8 @@ public class LocalEGADOAApplication {
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, new TrustManager[]{trustManager}, null);
             return Optional.of(new OkHttpClient.Builder().sslSocketFactory(sslContext.getSocketFactory(), trustManager).build());
-        } catch (IOException e) {
-            log.warn("S3 Root CA file {} does not exist, skipping...", s3RootCA);
+        } catch (CertificateException | IOException e) {
+            log.warn("S3 Root CA file {} does not exist or can't be opened, skipping...", s3RootCA);
             return Optional.empty();
         }
     }

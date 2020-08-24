@@ -4,6 +4,8 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import io.minio.MinioClient;
+import io.minio.PutObjectArgs;
 import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.localega.doa.dto.DestinationFormat;
 import no.uio.ifi.localega.doa.dto.ExportRequest;
@@ -35,6 +37,9 @@ public class ExportRequestsListener {
     private Gson gson;
 
     @Autowired
+    private MinioClient outboxClient;
+
+    @Autowired
     private AAIService aaiService;
 
     @Autowired
@@ -43,8 +48,14 @@ public class ExportRequestsListener {
     @Autowired
     private StreamingService streamingService;
 
+    @Value("${outbox.type}")
+    private String outboxType;
+
     @Value("${outbox.location}")
     private String outboxLocation;
+
+    @Value("${s3.bucket}")
+    private String s3Bucket;
 
     @RabbitListener(
             queuesToDeclare = @Queue(name = "${outbox.queue}", durable = "false", exclusive = "true", autoDelete = "true")
@@ -91,6 +102,25 @@ public class ExportRequestsListener {
                             String publicKey,
                             String startCoordinate,
                             String endCoordinate) throws Exception {
+        log.info("Outbox type: {}", outboxType);
+        switch (outboxType) {
+            case "POSIX":
+                exportFilePOSIX(user, datasetIds, fileId, publicKey, startCoordinate, endCoordinate);
+                break;
+            case "S3":
+                exportFileS3(user, datasetIds, fileId, publicKey, startCoordinate, endCoordinate);
+                break;
+            default:
+                throw new RuntimeException("Unknown outbox type: " + outboxType);
+        }
+    }
+
+    private void exportFilePOSIX(String user,
+                                 Collection<String> datasetIds,
+                                 String fileId,
+                                 String publicKey,
+                                 String startCoordinate,
+                                 String endCoordinate) throws Exception {
         InputStream inputStream = streamingService.stream(datasetIds, publicKey, fileId, DestinationFormat.CRYPT4GH.toString(), startCoordinate, endCoordinate);
         String fileName = metadataService.getFileName(fileId);
         String filePath = String.format(outboxLocation, user) + fileName;
@@ -100,6 +130,20 @@ public class ExportRequestsListener {
             log.warn("File exists in the outbox already, skipping");
         }
         FileUtils.copyToFile(inputStream, file);
+        log.info("File exported");
+    }
+
+    private void exportFileS3(String user,
+                              Collection<String> datasetIds,
+                              String fileId,
+                              String publicKey,
+                              String startCoordinate,
+                              String endCoordinate) throws Exception {
+        InputStream inputStream = streamingService.stream(datasetIds, publicKey, fileId, DestinationFormat.CRYPT4GH.toString(), startCoordinate, endCoordinate);
+        String fileName = metadataService.getFileName(fileId);
+        String filePath = user + "/" + fileName;
+        log.info("Exporting {} to {}", fileId, filePath);
+        outboxClient.putObject(PutObjectArgs.builder().bucket(s3Bucket).object(filePath).stream(inputStream, -1, 10485760).build());
         log.info("File exported");
     }
 

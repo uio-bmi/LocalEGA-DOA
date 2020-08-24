@@ -3,6 +3,8 @@ package no.uio.ifi.localega.doa;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
+import io.minio.GetObjectArgs;
+import io.minio.MinioClient;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
@@ -213,7 +215,11 @@ class LocalEGADOAApplicationTests {
 
     @SneakyThrows
     @Test
-    void testExportRequestFileValidToken() {
+    void testPOSIXExportRequestFileValidToken() {
+        if (System.getenv("OUTBOX_TYPE").equals("S3")) {
+            Assert.assertTrue(true);
+            return;
+        }
         export("EGAF00000000014", false);
         PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/my.sec.pem"), "passw0rd".toCharArray());
         try (InputStream byteArrayInputStream = new FileInputStream("requester@elixir-europe.org/files/test/body.enc");
@@ -225,10 +231,46 @@ class LocalEGADOAApplicationTests {
 
     @SneakyThrows
     @Test
-    void testExportRequestDatasetValidToken() {
+    void testPOSIXExportRequestDatasetValidToken() {
+        if (System.getenv("OUTBOX_TYPE").equals("S3")) {
+            Assert.assertTrue(true);
+            return;
+        }
         export("EGAD00010000919", true);
         PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/my.sec.pem"), "passw0rd".toCharArray());
         try (InputStream byteArrayInputStream = new FileInputStream("requester@elixir-europe.org/files/test/body.enc");
+             Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(byteArrayInputStream, privateKey)) {
+            byte[] bytes = IOUtils.toByteArray(crypt4GHInputStream);
+            Assert.assertEquals("2aef808fb42fa7b1ba76cb16644773f9902a3fdc2569e8fdc049f38280c4577e", DigestUtils.sha256Hex(bytes));
+        }
+    }
+
+    @SneakyThrows
+    @Test
+    void testS3ExportRequestFileValidToken() {
+        if (System.getenv("OUTBOX_TYPE").equals("POSIX")) {
+            Assert.assertTrue(true);
+            return;
+        }
+        export("EGAF00000000014", false);
+        PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/my.sec.pem"), "passw0rd".toCharArray());
+        try (InputStream byteArrayInputStream = getMinioClient().getObject(GetObjectArgs.builder().bucket("lega").object("requester@elixir-europe.org/test/body.enc").build());
+             Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(byteArrayInputStream, privateKey)) {
+            byte[] bytes = IOUtils.toByteArray(crypt4GHInputStream);
+            Assert.assertEquals("2aef808fb42fa7b1ba76cb16644773f9902a3fdc2569e8fdc049f38280c4577e", DigestUtils.sha256Hex(bytes));
+        }
+    }
+
+    @SneakyThrows
+    @Test
+    void testS3ExportRequestDatasetValidToken() {
+        if (System.getenv("OUTBOX_TYPE").equals("POSIX")) {
+            Assert.assertTrue(true);
+            return;
+        }
+        export("EGAD00010000919", true);
+        PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/my.sec.pem"), "passw0rd".toCharArray());
+        try (InputStream byteArrayInputStream = getMinioClient().getObject(GetObjectArgs.builder().bucket("lega").object("requester@elixir-europe.org/test/body.enc").build());
              Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(byteArrayInputStream, privateKey)) {
             byte[] bytes = IOUtils.toByteArray(crypt4GHInputStream);
             Assert.assertEquals("2aef808fb42fa7b1ba76cb16644773f9902a3fdc2569e8fdc049f38280c4577e", DigestUtils.sha256Hex(bytes));
@@ -267,6 +309,10 @@ class LocalEGADOAApplicationTests {
         channel.close();
         connectionFactory.close();
         Thread.sleep(1000 * 3);
+    }
+
+    MinioClient getMinioClient() {
+        return MinioClient.builder().endpoint("localhost", 9000, false).region("us-west-1").credentials("minio", "miniostorage").build();
     }
 
 }

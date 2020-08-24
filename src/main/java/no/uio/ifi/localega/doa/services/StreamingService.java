@@ -38,7 +38,7 @@ import java.util.Collection;
 public class StreamingService {
 
     @Autowired
-    private MinioClient minioClient;
+    private MinioClient archiveClient;
 
     @Autowired
     private FileRepository fileRepository;
@@ -122,7 +122,7 @@ public class StreamingService {
         String filePath = file.getFilePath();
         try { // S3
             BigInteger s3FileId = new BigInteger(filePath);
-            return minioClient.getObject(GetObjectArgs.builder().bucket(s3Bucket).object(s3FileId.toString()).build());
+            return archiveClient.getObject(GetObjectArgs.builder().bucket(s3Bucket).object(s3FileId.toString()).build());
         } catch (NumberFormatException e) { // filesystem
             String processedPath;
             if ("/".equalsIgnoreCase(archivePath)) {
