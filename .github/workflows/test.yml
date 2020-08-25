@@ -5,7 +5,7 @@ on:
 
 jobs:
 
-  build:
+  POSIX_outbox:
 
     strategy:
       fail-fast: true
@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      OUTBOX_TYPE: POSIX
       SSL_ENABLED: false
       BROKER_HOST: localhost
       BROKER_VALIDATE: false
@@ -32,7 +33,7 @@ jobs:
       - name: Docker Stack Deploy
         run: |
           docker swarm init
-          docker stack deploy DOA --compose-file docker-compose.yml
+          docker stack deploy DOA --compose-file docker-compose-posix-outbox.yml
 
       - name: Set up JDK 13
         uses: actions/setup-java@v1
@@ -53,6 +54,83 @@ jobs:
 
       - name: Set outbox location
         run: echo '::set-env name=OUTBOX_LOCATION::'$PWD'/%s/files/'
+
+      - name: Spring Boot Run
+        run: nohup mvn spring-boot:run --no-transfer-progress > nohup.out &
+
+      - name: Wait for app to start
+        run: |
+          RETRY_TIMES=0
+          until lsof -i -P -n | grep ":8080";
+          do
+          RETRY_TIMES=$((RETRY_TIMES+1));
+          if [ $RETRY_TIMES -eq 30 ]; then exit 1; fi
+          sleep 10;
+          done
+
+      - name: Test
+        run: mvn test --no-transfer-progress
+
+      - name: Spring Boot Run Logs
+        if: failure()
+        run: cat nohup.out
+
+      - name: Docker Service Logs
+        if: failure()
+        run: |
+          docker service logs -f DOA_db
+          docker service logs -f DOA_mockauth
+
+
+  S3_outbox:
+
+    strategy:
+      fail-fast: true
+
+    runs-on: ubuntu-latest
+
+    env:
+      OUTBOX_TYPE: S3
+      S3_OUT_ENDPOINT: localhost
+      S3_OUT_PORT: 9000
+      S3_OUT_SECURE: false
+      SSL_ENABLED: false
+      BROKER_HOST: localhost
+      BROKER_VALIDATE: false
+      DB_INSTANCE: localhost
+      ROOT_CERT_PATH: test/rootCA.pem
+      CERT_PATH: test/localhost-client.pem
+      CERT_KEY: test/localhost-client-key.der
+      POSTGRES_PASSWORD: password
+      OPENID_CONFIGURATION_URL: http://localhost:8000/openid-configuration
+      CRYPT4GH_PRIVATE_KEY_PATH: test/crypt4gh.sec.pem
+      CRYPT4GH_PRIVATE_KEY_PASSWORD_PATH: test/crypt4gh.pass
+
+    steps:
+
+      - uses: actions/checkout@v1
+
+      - name: Docker Stack Deploy
+        run: |
+          docker swarm init
+          docker stack deploy DOA --compose-file docker-compose-s3-outbox.yml
+
+      - name: Set up JDK 13
+        uses: actions/setup-java@v1
+        with:
+          java-version: 13
+
+      - name: Sleep and Status check
+        run: |
+          sleep 30
+          docker service list
+
+      - uses: actions/cache@v1
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
       - name: Spring Boot Run
         run: nohup mvn spring-boot:run --no-transfer-progress > nohup.out &

@@ -23,6 +23,7 @@ spring.rabbitmq:
 
 outbox:
   enabled: ${OUTBOX_ENABLED:true}
+  type: ${OUTBOX_TYPE:POSIX}
   queue: ${OUTBOX_QUEUE:exportRequests}
   location: ${OUTBOX_LOCATION:/ega/outbox/p11-%s/files/}
 
@@ -43,6 +44,16 @@ s3:
   bucket: ${S3_BUCKET:lega}
   secure: ${S3_SECURE:true}
   root-ca: ${S3_ROOT_CERT_PATH:/etc/ssl/certs/ca-certificates.crt}
+
+s3.out:
+  endpoint: ${S3_OUT_ENDPOINT:outbox}
+  port: ${S3_OUT_PORT:443}
+  access-key: ${S3_OUT_ACCESS_KEY:minio}
+  secret-key: ${S3_OUT_SECRET_KEY:miniostorage}
+  region: ${S3_OUT_REGION:us-west-1}
+  bucket: ${S3_OUT_BUCKET:lega}
+  secure: ${S3_OUT_SECURE:true}
+  root-ca: ${S3_OUT_ROOT_CERT_PATH:/etc/ssl/certs/ca-certificates.crt}
 
 archive:
   path: ${ARCHIVE_PATH:/}
