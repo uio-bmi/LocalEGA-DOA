@@ -72,7 +72,7 @@ public class MetadataService {
      * @return Filename.
      */
     public String getFileName(String fileId) {
-        return fileRepository.findById(fileId).orElseThrow(RuntimeException::new).getFileName();
+        return fileRepository.findById(fileId).orElseThrow(RuntimeException::new).getDisplayFileName();
     }
 
 }
