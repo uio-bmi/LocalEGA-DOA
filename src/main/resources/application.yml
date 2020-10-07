@@ -64,6 +64,8 @@ ga4gh:
     public-key-path: ${PASSPORT_PUBLIC_KEY_PATH:/etc/ega/jwt/passport.pem}
     # If public key is absent, then openid-configuration-url is used to query JWK and fetch the public key.
     openid-configuration-url: ${OPENID_CONFIGURATION_URL:https://login.elixir-czech.org/oidc/.well-known/openid-configuration}
+    # /userinfo endpoint URL for handling opaque access tokens
+    userinfo-endpoint-url: ${USERINFO_ENDPOINT_URL:https://login.elixir-czech.org/oidc/userinfo}
   visa:
     # First, the public key is checked. If present, it's used for validating the token. Otherwise, JKU is used instead (entry in the header).
     public-key-path: ${VISA_PUBLIC_KEY_PATH:/etc/ega/jwt/visa.pem}

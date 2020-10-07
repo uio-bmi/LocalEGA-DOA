@@ -9,6 +9,7 @@ import no.uio.ifi.clearinghouse.model.VisaType;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,6 +24,9 @@ import java.util.stream.Collectors;
 @Service
 public class AAIService {
 
+    @Value("${ga4gh.passport.userinfo-endpoint-url}")
+    private String userInfoEndpointURL;
+
     @Value("${ga4gh.passport.openid-configuration-url}")
     private String openIDConfigurationURL;
 
@@ -33,25 +37,37 @@ public class AAIService {
     private String visaPublicKeyPath;
 
     /**
-     * Extracts datasets access information from the JWT token.
+     * Extracts datasets access information from the JWT or opaque access token.
      *
-     * @param jwtToken JWT token with access info in GA4GH Passport format.
+     * @param accessToken JWT or opaque access token.
      * @return IDs of datasets user has access to.
      */
-    public Collection<String> getDatasetIds(String jwtToken) {
-        DecodedJWT decodedJWT = JWT.decode(jwtToken);
-        boolean isVisa = decodedJWT.getClaims().containsKey("ga4gh_visa_v1");
+    public Collection<String> getDatasetIds(String accessToken) {
         Collection<Visa> visas = new ArrayList<>();
-        if (isVisa) {
-            getVisa(jwtToken).ifPresent(visas::add);
-        } else {
-            visas.addAll(getVisas(jwtToken));
+        if (StringUtils.countMatches(accessToken, '.') == 3) { // JWT access token
+            DecodedJWT decodedJWT = JWT.decode(accessToken);
+            boolean isVisa = decodedJWT.getClaims().containsKey("ga4gh_visa_v1");
+            if (isVisa) {
+                getVisa(accessToken).ifPresent(visas::add);
+            } else {
+                visas.addAll(getVisasFromJWTToken(accessToken));
+            }
+        } else { // opaque token
+            visas = getVisasFromOpaqueToken(accessToken);
         }
+
         List<Visa> controlledAccessGrantsVisas = visas
                 .stream()
                 .filter(v -> v.getType().equalsIgnoreCase(VisaType.ControlledAccessGrants.name()))
                 .collect(Collectors.toList());
-        log.info("Authentication and authorization attempt. User {} provided following valid GA4GH Visas: {}", decodedJWT.getSubject(), controlledAccessGrantsVisas);
+
+        if (CollectionUtils.isEmpty(controlledAccessGrantsVisas)) {
+            log.info("Unauthorized access attempt: user doesn't have any valid visas. Access token: {}", accessToken);
+        }
+
+        String subject = controlledAccessGrantsVisas.stream().findFirst().orElseThrow(RuntimeException::new).getSub();
+
+        log.info("Authentication and authorization attempt. User {} provided following valid GA4GH Visas: {}", subject, controlledAccessGrantsVisas);
         Set<String> datasets = controlledAccessGrantsVisas
                 .stream()
                 .map(Visa::getValue)
@@ -62,7 +78,16 @@ public class AAIService {
         return datasets;
     }
 
-    protected Collection<Visa> getVisas(String accessToken) {
+    protected Collection<Visa> getVisasFromOpaqueToken(String accessToken) {
+        return Clearinghouse.INSTANCE.getVisaTokensFromOpaqueToken(accessToken, userInfoEndpointURL)
+                .stream()
+                .map(this::getVisa)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+    }
+
+    protected Collection<Visa> getVisasFromJWTToken(String accessToken) {
         Collection<String> visaTokens;
         try {
             String passportPublicKey = Files.readString(Path.of(passportPublicKeyPath));
