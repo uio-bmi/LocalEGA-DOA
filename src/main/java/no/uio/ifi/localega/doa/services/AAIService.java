@@ -44,7 +44,7 @@ public class AAIService {
      */
     public Collection<String> getDatasetIds(String accessToken) {
         Collection<Visa> visas = new ArrayList<>();
-        if (StringUtils.countMatches(accessToken, '.') == 3) { // JWT access token
+        if (StringUtils.countMatches(accessToken, '.') == 2) { // JWT access token
             DecodedJWT decodedJWT = JWT.decode(accessToken);
             boolean isVisa = decodedJWT.getClaims().containsKey("ga4gh_visa_v1");
             if (isVisa) {
