@@ -49,6 +49,7 @@ Environment variables used:
 | ARCHIVE_PATH                           | /                                                                    | Path to the filesystem-archive                     |
 | PASSPORT_PUBLIC_KEY_PATH               | /etc/ega/jwt/passport.pem                                            | Path to the public key for passport JWT validation |
 | OPENID_CONFIGURATION_URL               | https://login.elixir-czech.org/oidc/.well-known/openid-configuration | URL of the OpenID configuration endpoint           |
+| USERINFO_ENDPOINT_URL                  | https://login.elixir-czech.org/oidc/userinfo                         | URL of the `/userinfo` endpoint (for opaque tokens)|
 | VISA_PUBLIC_KEY_PATH                   | /etc/ega/jwt/visa.pem                                                | Path to the public key for visas JWT validation    |
 | CRYPT4GH_PRIVATE_KEY_PATH              | /etc/ega/crypt4gh/key.pem                                            | Path to the Crypt4GH private key                   |
 | CRYPT4GH_PRIVATE_KEY_PASSWORD_PATH     | /etc/ega/crypt4gh/key.pass                                           | Path to the Crypt4GH private key passphrase        |
