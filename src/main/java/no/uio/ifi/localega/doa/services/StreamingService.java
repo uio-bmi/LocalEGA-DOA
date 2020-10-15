@@ -127,12 +127,10 @@ public class StreamingService {
             String processedPath;
             if ("/".equalsIgnoreCase(archivePath)) {
                 processedPath = filePath;
-            } else if (archivePath.endsWith("/")) {
-                String tempPath = archivePath.substring(0, archivePath.length() - 1);
-                processedPath = tempPath + filePath;
             } else {
                 processedPath = archivePath + filePath;
             }
+            processedPath = processedPath.replace("//", "/");
             log.info("Archive path is: {}", processedPath);
             return Files.newInputStream(new File(processedPath).toPath());
         }
