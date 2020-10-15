@@ -130,6 +130,7 @@ public class StreamingService {
             } else {
                 processedPath = archivePath + filePath;
             }
+            processedPath = processedPath.replace("//", "/");
             log.info("Archive path is: {}", processedPath);
             return Files.newInputStream(new File(processedPath).toPath());
         }
