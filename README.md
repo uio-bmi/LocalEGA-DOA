@@ -1,5 +1,5 @@
 # NeIC sda-doa Data Out API
-![Java CI](https://github.com/neicnordic/LocalEGA-DOA/workflows/Java%20CI/badge.svg)
+![Java CI](https://github.com/neicnordic/sda-doa/workflows/Java%20CI/badge.svg)
 
 
 ## Configuration
