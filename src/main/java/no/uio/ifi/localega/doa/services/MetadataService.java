@@ -58,6 +58,9 @@ public class MetadataService {
                     file.setDisplayFileName(f.getDisplayFileName());
                     file.setFileName(f.getFileName());
                     file.setFileSize(f.getFileSize());
+                    file.setDecryptedFileSize(f.getDecryptedFileSize());
+                    file.setDecryptedFileChecksum(f.getDecryptedFileChecksum());
+                    file.setDecryptedFileChecksumType(f.getDecryptedFileChecksumType());
                     file.setUnencryptedChecksum(f.getUnencryptedChecksum());
                     file.setUnencryptedChecksumType(f.getUnencryptedChecksumType());
                     file.setFileStatus(f.getFileStatus());

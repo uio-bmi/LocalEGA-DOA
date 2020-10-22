@@ -43,6 +43,7 @@ public class LEGAFile {
     @Column(name = "display_file_name", insertable = false, updatable = false, length = 128)
     private String displayFileName;
 
+    // This is the size of the file that is in the archive, the encrypted part of the file
     @Column(name = "file_size", insertable = false, updatable = false)
     private Long fileSize;
 
@@ -61,6 +62,15 @@ public class LEGAFile {
     @Size(max = 12)
     @Column(name = "unencrypted_checksum_type", insertable = false, updatable = false, length = 12)
     private String unencryptedChecksumType;
+
+    @Column(name = "decrypted_file_size", insertable = false, updatable = false)
+    private Long decryptedFileSize;
+
+    @Column(name = "decrypted_file_checksum", insertable = false, updatable = false)
+    private String decryptedFileChecksum;
+
+    @Column(name = "decrypted_file_checksum_type", insertable = false, updatable = false)
+    private String decryptedFileChecksumType;
 
     @Size(max = 13)
     @Column(name = "file_status", insertable = false, updatable = false, length = 13)
