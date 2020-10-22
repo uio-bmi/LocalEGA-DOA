@@ -10,7 +10,7 @@
     </parent>
     <groupId>no.uio.ifi</groupId>
     <artifactId>localega-doa</artifactId>
-    <version>1.4.0</version>
+    <version>1.5.0</version>
     <name>localega-doa</name>
     <description>LocalEGA Data Out API</description>
 
