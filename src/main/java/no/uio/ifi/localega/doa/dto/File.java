@@ -19,6 +19,9 @@ public class File {
     private Long fileSize;
     private String unencryptedChecksum;
     private String unencryptedChecksumType;
+    private Long decryptedFileSize;
+    private String decryptedFileChecksum;
+    private String decryptedFileChecksumType;
     private String fileStatus;
 
 }
