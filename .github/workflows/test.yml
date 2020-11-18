@@ -54,7 +54,7 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Set outbox location
-        run: echo '::set-env name=OUTBOX_LOCATION::'$PWD'/%s/files/'
+        run: echo "OUTBOX_LOCATION=$PWD/%s/files/" >> $GITHUB_ENV
 
       - name: Spring Boot Run
         run: nohup mvn spring-boot:run --no-transfer-progress > nohup.out &
