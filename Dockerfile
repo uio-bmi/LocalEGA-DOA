@@ -18,8 +18,6 @@ COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-RUN addgroup -g 65534 lega && adduser -D -u 65534 -G nobody nobody
-
 USER 65534
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
