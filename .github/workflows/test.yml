@@ -43,6 +43,7 @@ jobs:
         if: matrix.storagetype == 'posix'
         run: |
           echo "OUTBOX_TYPE=POSIX" >> $GITHUB_ENV
+          echo "OUTBOX_LOCATION=$PWD/%s/files/" >> $GITHUB_ENV
 
       - name: Docker Stack Deploy for ${{ matrix.storagetype }} storage
         run: |
@@ -65,10 +66,6 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-
-      - name: Set outbox location if posix
-        if: matrix.storagetype == 'posix'
-        run: echo "OUTBOX_LOCATION=$PWD/%s/files/" >> $GITHUB_ENV
 
       - name: Spring Boot Run
         run: nohup mvn spring-boot:run --no-transfer-progress > nohup.out &
