@@ -11,7 +11,7 @@ server.ssl:
 spring.rabbitmq:
   host: ${BROKER_HOST:private-mq}
   port: ${BROKER_PORT:5671}
-  virtual-host: ${BROKER_VHOST:/}
+  virtual-host: ${BROKER_VHOST:sda}
   username: ${BROKER_USERNAME:admin}
   password: ${BROKER_PASSWORD:guest}
   ssl:

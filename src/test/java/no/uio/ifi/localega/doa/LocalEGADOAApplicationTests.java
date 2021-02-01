@@ -279,7 +279,7 @@ class LocalEGADOAApplicationTests {
 
     @SneakyThrows
     void export(String id, boolean dataset) {
-        String mqConnectionString = "amqps://admin:guest@localhost:5671/%2F";
+        String mqConnectionString = "amqps://admin:guest@localhost:5671/sda";
         ConnectionFactory factory = new ConnectionFactory();
         factory.setUri(mqConnectionString);
         com.rabbitmq.client.Connection connectionFactory = factory.newConnection();

@@ -51,6 +51,7 @@ services:
       - SSL_DEPTH=2
       - USER_NAME=admin
       - PASSWORD_HASH=4tHURqDiZzypw0NTvoHhpn8/MMgONWonWxgRZ4NXgR8nZRBz
+      - VIRTUAL_HOST=sda
     secrets:
       - source: server.pem
         target: /etc/rabbitmq/ssl.cert
