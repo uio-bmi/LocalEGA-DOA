@@ -77,7 +77,7 @@ class LocalEGADOAApplicationTests {
         connection.close();
         props.setProperty("user", "lega_out");
         connection = DriverManager.getConnection(url, props);
-        PreparedStatement dataset = connection.prepareStatement("INSERT INTO local_ega_ebi.filedataset(file_id, dataset_stable_id) values(1, 'EGAD00010000919');");
+        PreparedStatement dataset = connection.prepareStatement("INSERT INTO local_ega_ebi.filedataset(file_id, dataset_stable_id) values(1, 'https://www.ebi.ac.uk/ega/EGAD00010000919');");
         try {
             dataset.executeQuery();
         } catch (Exception e) {
@@ -118,18 +118,18 @@ class LocalEGADOAApplicationTests {
         Assert.assertEquals(HttpStatus.OK.value(), status);
         JSONArray datasets = response.getBody().getArray();
         Assert.assertEquals(1, datasets.length());
-        Assert.assertEquals("EGAD00010000919", datasets.getString(0));
+        Assert.assertEquals("https://www.ebi.ac.uk/ega/EGAD00010000919", datasets.getString(0));
     }
 
     @Test
     void testMetadataFilesNoToken() {
-        int status = Unirest.get("http://localhost:8080/metadata/datasets/EGAD00010000919/files").asJson().getStatus();
+        int status = Unirest.get("http://localhost:8080/metadata/datasets/https://www.ebi.ac.uk/ega/EGAD00010000919/files").asJson().getStatus();
         Assert.assertEquals(HttpStatus.UNAUTHORIZED.value(), status);
     }
 
     @Test
     void testMetadataFilesInvalidToken() {
-        int status = Unirest.get("http://localhost:8080/metadata/datasets/EGAD00010000919/files").header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidToken).asJson().getStatus();
+        int status = Unirest.get("http://localhost:8080/metadata/datasets/https://www.ebi.ac.uk/ega/EGAD00010000919/files").header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidToken).asJson().getStatus();
         Assert.assertEquals(HttpStatus.UNAUTHORIZED.value(), status);
     }
 
@@ -142,10 +142,10 @@ class LocalEGADOAApplicationTests {
 
     @Test
     void testMetadataFilesValidTokenValidDataset() {
-        HttpResponse<JsonNode> response = Unirest.get("http://localhost:8080/metadata/datasets/EGAD00010000919/files").header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken).asJson();
+        HttpResponse<JsonNode> response = Unirest.get("http://localhost:8080/metadata/datasets/https://www.ebi.ac.uk/ega/EGAD00010000919/files").header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken).asJson();
         int status = response.getStatus();
         Assert.assertEquals(HttpStatus.OK.value(), status);
-        Assert.assertEquals("[{\"fileId\":\"EGAF00000000014\",\"datasetId\":\"EGAD00010000919\",\"displayFileName\":\"body.enc\",\"fileName\":\"test/body.enc\",\"fileStatus\":\"READY\"}]", response.getBody().toString());
+        Assert.assertEquals("[{\"fileId\":\"EGAF00000000014\",\"datasetId\":\"https://www.ebi.ac.uk/ega/EGAD00010000919\",\"displayFileName\":\"body.enc\",\"fileName\":\"test/body.enc\",\"fileStatus\":\"READY\"}]", response.getBody().toString());
     }
 
     @Test
@@ -236,7 +236,7 @@ class LocalEGADOAApplicationTests {
             Assert.assertTrue(true);
             return;
         }
-        export("EGAD00010000919", true);
+        export("https://www.ebi.ac.uk/ega/EGAD00010000919", true);
         PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/my.sec.pem"), "passw0rd".toCharArray());
         try (InputStream byteArrayInputStream = new FileInputStream("requester@elixir-europe.org/files/body.enc");
              Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(byteArrayInputStream, privateKey)) {
@@ -268,7 +268,7 @@ class LocalEGADOAApplicationTests {
             Assert.assertTrue(true);
             return;
         }
-        export("EGAD00010000919", true);
+        export("https://www.ebi.ac.uk/ega/EGAD00010000919", true);
         PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/my.sec.pem"), "passw0rd".toCharArray());
         try (InputStream byteArrayInputStream = getMinioClient().getObject(GetObjectArgs.builder().bucket("lega").object("requester@elixir-europe.org/body.enc").build());
              Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(byteArrayInputStream, privateKey)) {
