@@ -123,13 +123,13 @@ class LocalEGADOAApplicationTests {
 
     @Test
     void testMetadataFilesNoToken() {
-        int status = Unirest.get("http://localhost:8080/metadata/datasets/https://www.ebi.ac.uk/ega/EGAD00010000919/files").asJson().getStatus();
+        int status = Unirest.get("http://localhost:8080/metadata/datasets/EGAD00010000919/files").asJson().getStatus();
         Assert.assertEquals(HttpStatus.UNAUTHORIZED.value(), status);
     }
 
     @Test
     void testMetadataFilesInvalidToken() {
-        int status = Unirest.get("http://localhost:8080/metadata/datasets/https://www.ebi.ac.uk/ega/EGAD00010000919/files").header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidToken).asJson().getStatus();
+        int status = Unirest.get("http://localhost:8080/metadata/datasets/EGAD00010000919/files").header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidToken).asJson().getStatus();
         Assert.assertEquals(HttpStatus.UNAUTHORIZED.value(), status);
     }
 
@@ -142,7 +142,7 @@ class LocalEGADOAApplicationTests {
 
     @Test
     void testMetadataFilesValidTokenValidDataset() {
-        HttpResponse<JsonNode> response = Unirest.get("http://localhost:8080/metadata/datasets/https://www.ebi.ac.uk/ega/EGAD00010000919/files").header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken).asJson();
+        HttpResponse<JsonNode> response = Unirest.get("http://localhost:8080/metadata/datasets/EGAD00010000919/files").header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken).asJson();
         int status = response.getStatus();
         Assert.assertEquals(HttpStatus.OK.value(), status);
         Assert.assertEquals("[{\"fileId\":\"EGAF00000000014\",\"datasetId\":\"https://www.ebi.ac.uk/ega/EGAD00010000919\",\"displayFileName\":\"body.enc\",\"fileName\":\"test/body.enc\",\"fileStatus\":\"READY\"}]", response.getBody().toString());
