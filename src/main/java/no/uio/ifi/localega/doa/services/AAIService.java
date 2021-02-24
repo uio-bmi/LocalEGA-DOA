@@ -72,7 +72,7 @@ public class AAIService {
                 .stream()
                 .map(Visa::getValue)
                 .map(d -> StringUtils.stripEnd(d, "/"))
-                .map(d -> StringUtils.substringAfterLast(d, "/"))
+                .map(d -> new String(Base64.getEncoder().encode(d.getBytes())))
                 .collect(Collectors.toSet());
         log.info("User has access to the following datasets: {}", datasets);
         return datasets;
