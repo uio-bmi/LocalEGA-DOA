@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Set;
+import java.util.Base64;
 
 /**
  * REST controller incorporating metadata-related endpoints.
@@ -53,6 +54,13 @@ public class MetadataController {
     @GetMapping("/datasets/{datasetId}/files")
     public ResponseEntity<?> files(@PathVariable(value = "datasetId") String datasetId) {
         Set<String> datasetIds = (Set<String>) request.getAttribute(AAIAspect.DATASETS);
+        try {
+            // attempt to base64 decode the path param
+            datasetId = new String(Base64.getDecoder().decode(datasetId.getBytes()));
+        } catch (Exception e) {
+            // path param was not in base64 format
+            log.info(e.getMessage(), e);
+        }
         if (!datasetIds.contains(datasetId)) {
             log.info("User doesn't have permissions to list files in the requested dataset: {}", datasetId);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
