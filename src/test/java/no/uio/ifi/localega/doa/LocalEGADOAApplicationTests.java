@@ -13,6 +13,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.crypt4gh.stream.Crypt4GHInputStream;
 import no.uio.ifi.crypt4gh.util.KeyUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -145,7 +146,7 @@ class LocalEGADOAApplicationTests {
         HttpResponse<JsonNode> response = Unirest.get("http://localhost:8080/metadata/datasets/aHR0cHM6Ly93d3cuZWJpLmFjLnVrL2VnYS9FR0FEMDAwMTAwMDA5MTk=/files").header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken).asJson();
         int status = response.getStatus();
         Assert.assertEquals(HttpStatus.OK.value(), status);
-        Assert.assertEquals("[{\"fileId\":\"EGAF00000000014\",\"datasetId\":\"aHR0cHM6Ly93d3cuZWJpLmFjLnVrL2VnYS9FR0FEMDAwMTAwMDA5MTk=\",\"displayFileName\":\"body.enc\",\"fileName\":\"test/body.enc\",\"fileStatus\":\"READY\"}]", response.getBody().toString());
+        Assert.assertEquals("[{\"fileId\":\"EGAF00000000014\",\"datasetId\":\"aHR0cHM6Ly93d3cuZWJpLmFjLnVrL2VnYS9FR0FEMDAwMTAwMDA5MTk=\",\"displayFileName\":\"body.enc\",\"fileName\":\"test/body.enc\",\"fileStatus\":\"READY\"}]", StringEscapeUtils.unescapeJava(response.getBody().toString()));
     }
 
     @Test
@@ -236,7 +237,7 @@ class LocalEGADOAApplicationTests {
             Assert.assertTrue(true);
             return;
         }
-        export("EGAD00010000919", true);
+        export("aHR0cHM6Ly93d3cuZWJpLmFjLnVrL2VnYS9FR0FEMDAwMTAwMDA5MTk=", true);
         PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/my.sec.pem"), "passw0rd".toCharArray());
         try (InputStream byteArrayInputStream = new FileInputStream("requester@elixir-europe.org/files/body.enc");
              Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(byteArrayInputStream, privateKey)) {
