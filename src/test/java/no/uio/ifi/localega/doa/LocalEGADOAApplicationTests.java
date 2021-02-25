@@ -60,26 +60,34 @@ class LocalEGADOAApplicationTests {
         props.setProperty("sslcert", new File("test/localhost-client.pem").getAbsolutePath());
         props.setProperty("sslkey", new File("test/localhost-client-key.der").getAbsolutePath());
         Connection connection = DriverManager.getConnection(url, props);
-        PreparedStatement file = connection.prepareStatement("SELECT local_ega.insert_file('body.enc','requester@elixir-europe.org');");
-        file.executeQuery();
-        PreparedStatement header = connection.prepareStatement("UPDATE local_ega.files SET header = '637279707434676801000000010000006c00000000000000aa7ad1bb4f93bf5e4fb3bc28a95bc4d80bf2fd8075e69eb2ee15e0a4f08f1d78ab98c8fd9b50e675f71311936e8d0c6f73538962b836355d5d4371a12eae46addb43518b5236fb9554249710a473026f34b264a61d2ba52ed11abc1efa1d3478fa40a710' WHERE id = 1;");
+        PreparedStatement file1 = connection.prepareStatement("SELECT local_ega.insert_file('body.enc','requester@elixir-europe.org');");
+        PreparedStatement file2 = connection.prepareStatement("SELECT local_ega.insert_file('body.enc','requester@elixir-europe.org');");
+        file1.executeQuery();
+        file2.executeQuery();
+        PreparedStatement header1 = connection.prepareStatement("UPDATE local_ega.files SET header = '637279707434676801000000010000006c00000000000000aa7ad1bb4f93bf5e4fb3bc28a95bc4d80bf2fd8075e69eb2ee15e0a4f08f1d78ab98c8fd9b50e675f71311936e8d0c6f73538962b836355d5d4371a12eae46addb43518b5236fb9554249710a473026f34b264a61d2ba52ed11abc1efa1d3478fa40a710' WHERE id = 1;");
+        PreparedStatement header2 = connection.prepareStatement("UPDATE local_ega.files SET header = '637279707434676801000000010000006c00000000000000aa7ad1bb4f93bf5e4fb3bc28a95bc4d80bf2fd8075e69eb2ee15e0a4f08f1d78ab98c8fd9b50e675f71311936e8d0c6f73538962b836355d5d4371a12eae46addb43518b5236fb9554249710a473026f34b264a61d2ba52ed11abc1efa1d3478fa40a710' WHERE id = 2;");
         try {
-            header.executeQuery();
+            header1.executeQuery();
+            header2.executeQuery();
         } catch (Exception e) {
             log.info(e.getMessage());
         }
-        PreparedStatement finalize = connection.prepareStatement("UPDATE local_ega.files SET archive_path = 'test/body.enc', status = 'READY', stable_id = 'EGAF00000000014' WHERE id = 1;");
+        PreparedStatement finalize1 = connection.prepareStatement("UPDATE local_ega.files SET archive_path = 'test/body.enc', status = 'READY', stable_id = 'EGAF00000000014' WHERE id = 1;");
+        PreparedStatement finalize2 = connection.prepareStatement("UPDATE local_ega.files SET archive_path = 'test/body.enc', status = 'READY', stable_id = 'EGAF00000000014' WHERE id = 2;");
         try {
-            finalize.executeQuery();
+            finalize1.executeQuery();
+            finalize2.executeQuery();
         } catch (Exception e) {
             log.info(e.getMessage());
         }
         connection.close();
         props.setProperty("user", "lega_out");
         connection = DriverManager.getConnection(url, props);
-        PreparedStatement dataset = connection.prepareStatement("INSERT INTO local_ega_ebi.filedataset(file_id, dataset_stable_id) values(1, 'https://www.ebi.ac.uk/ega/EGAD00010000919');");
+        PreparedStatement dataset1 = connection.prepareStatement("INSERT INTO local_ega_ebi.filedataset(file_id, dataset_stable_id) values(1, 'https://www.ebi.ac.uk/ega/EGAD00010000919');");
+        PreparedStatement dataset2 = connection.prepareStatement("INSERT INTO local_ega_ebi.filedataset(file_id, dataset_stable_id) values(2, 'EGAD00010000919');");
         try {
-            dataset.executeQuery();
+            dataset1.executeQuery();
+            dataset2.executeQuery();
         } catch (Exception e) {
             log.info(e.getMessage());
         }
@@ -159,14 +167,13 @@ class LocalEGADOAApplicationTests {
         Assert.assertEquals(HttpStatus.FORBIDDEN.value(), status);
     }
 
-    // This test case needs a new token, now that base64 was introduced
-    // @Test
-    // void testMetadataFilesValidTokenValidDataset() {
-    //     HttpResponse<JsonNode> response = Unirest.get("http://localhost:8080/metadata/datasets/EGAD00010000919/files").header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken).asJson();
-    //     int status = response.getStatus();
-    //     Assert.assertEquals(HttpStatus.OK.value(), status);
-    //     Assert.assertEquals("[{\"fileId\":\"EGAF00000000014\",\"datasetId\":\"EGAD00010000919\",\"displayFileName\":\"body.enc\",\"fileName\":\"test/body.enc\",\"fileStatus\":\"READY\"}]", response.getBody().toString());
-    // }
+    @Test
+    void testMetadataFilesValidTokenValidDataset() {
+        HttpResponse<JsonNode> response = Unirest.get("http://localhost:8080/metadata/datasets/EGAD00010000919/files").header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken).asJson();
+        int status = response.getStatus();
+        Assert.assertEquals(HttpStatus.OK.value(), status);
+        Assert.assertEquals("[{\"fileId\":\"EGAF00000000014\",\"datasetId\":\"EGAD00010000919\",\"displayFileName\":\"body.enc\",\"fileName\":\"test/body.enc\",\"fileStatus\":\"READY\"}]", response.getBody().toString());
+    }
 
     @Test
     void testMetadataFilesValidTokenValidDatasetBase64() {

@@ -54,19 +54,20 @@ public class MetadataController {
     @GetMapping("/datasets/{datasetId}/files")
     public ResponseEntity<?> files(@PathVariable(value = "datasetId") String datasetId) {
         Set<String> datasetIds = (Set<String>) request.getAttribute(AAIAspect.DATASETS);
+        String datasetIdParsed = "";
         try {
             // attempt to base64 decode the path param
-            datasetId = new String(Base64.getDecoder().decode(datasetId.getBytes()));
+            datasetIdParsed = new String(Base64.getDecoder().decode(datasetId.getBytes()));
         } catch (Exception e) {
             // path param was not in base64 format
-            log.info(e.getMessage(), e);
+            datasetIdParsed = datasetId;
         }
-        if (!datasetIds.contains(datasetId)) {
-            log.info("User doesn't have permissions to list files in the requested dataset: {}", datasetId);
+        if (!datasetIds.contains(datasetIdParsed)) {
+            log.info("User doesn't have permissions to list files in the requested dataset: {}", datasetIdParsed);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        log.info("User has permissions to list files in the requested dataset: {}", datasetId);
-        return ResponseEntity.ok(metadataService.files(datasetId));
+        log.info("User has permissions to list files in the requested dataset: {}", datasetIdParsed);
+        return ResponseEntity.ok(metadataService.files(datasetIdParsed));
     }
 
 }
