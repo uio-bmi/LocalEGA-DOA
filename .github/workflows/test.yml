@@ -97,5 +97,5 @@ jobs:
       - name: Docker Service Logs
         if: failure()
         run: |
-          docker service logs -f DOA_db
-          docker service logs -f DOA_mockauth
+          docker service logs DOA_db
+          docker service logs DOA_mockauth
