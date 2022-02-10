@@ -32,6 +32,11 @@ jobs:
 
       - uses: actions/checkout@v2
 
+      - name: Add Maven Github authentication
+        run: |
+          mkdir -p ~/.m2
+          echo "<settings xmlns='http://maven.apache.org/SETTINGS/1.0.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd'> <servers> <server> <id>github-crypt4gh</id> <username>${{ github.actor }}</username> <password>${{ secrets.GITHUB_TOKEN }}</password> </server> <server> <id>github-clearinghouse</id> <username>${{ github.actor }}</username> <password>${{ secrets.GITHUB_TOKEN }}</password> </server> </servers> </settings>" > ~/.m2/settings.xml
+
       - name: Set S3 env variables
         if: matrix.storagetype == 's3'
         run: |
@@ -92,5 +97,5 @@ jobs:
       - name: Docker Service Logs
         if: failure()
         run: |
-          docker service logs -f DOA_db
-          docker service logs -f DOA_mockauth
+          docker service logs DOA_db
+          docker service logs DOA_mockauth
