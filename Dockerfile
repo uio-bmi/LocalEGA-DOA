@@ -8,7 +8,7 @@ COPY src/ /src/
 
 RUN mvn clean install -DskipTests --no-transfer-progress
 
-FROM openjdk:17-alpine
+FROM openjdk:18-alpine
 
 RUN apk add --no-cache ca-certificates openssl
 
