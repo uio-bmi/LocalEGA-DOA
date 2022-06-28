@@ -3,7 +3,7 @@ version: '3.3'
 services:
 
   db:
-    image: neicnordic/sda-db:latest
+    image: ghcr.io/neicnordic/sda-db:v1.4.5
     ports:
       - 5432:5432
     environment:
