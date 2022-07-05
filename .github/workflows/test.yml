@@ -75,7 +75,7 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Spring Boot Run
-        run: nohup mvn spring-boot:run --no-transfer-progress > nohup.out &
+        run: nohup mvn -gs ~/.m2/settings.xml spring-boot:run --no-transfer-progress > nohup.out &
 
       - name: Wait for app to start
         run: |
@@ -88,7 +88,7 @@ jobs:
           done
 
       - name: Test
-        run: mvn test --no-transfer-progress
+        run: mvn -gs ~/.m2/settings.xml test --no-transfer-progress
 
       - name: Spring Boot Run Logs
         if: failure()
