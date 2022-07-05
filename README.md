@@ -56,6 +56,8 @@ Environment variables used:
 | LOGSTASH_HOST                          |                                                                      | Hostname of the Logstash instance (if any)         |
 | LOGSTASH_PORT                          |                                                                      | Port of the Logstash instance (if any)             |
 
+This version is built with newly deployed artifacts in GitHub Packages.
+
 If `LOGSTASH_HOST` or `LOGSTASH_PORT` is empty, Logstash logging will not be enabled.
 
 In addition, environment variables can be used to configure log level for different packages. Package loggers can be configured using corresponding package names, for example, to turn of logs of Spring, one can set environment variable `LOGGING_LEVEL_ORG_SPRINGFRAMEWORK=OFF`, or to set DOA's own logs to debug: `LOGGING_LEVEL_NO_UIO_IFI=DEBUG`, etc.
