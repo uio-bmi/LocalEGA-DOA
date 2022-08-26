@@ -15,7 +15,9 @@ RUN mvn clean install -DskipTests --no-transfer-progress
 
 FROM openjdk:18-alpine
 
-RUN apk add --no-cache ca-certificates openssl
+RUN apk -U upgrade && \
+    apk add ca-certificates openssl && \
+    rm -rf /var/cache/apk/*
 
 COPY --from=builder /target/localega-doa-*.jar /localega-doa.jar
 
