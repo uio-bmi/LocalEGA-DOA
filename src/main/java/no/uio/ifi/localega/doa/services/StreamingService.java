@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import javax.security.auth.message.AuthException;
+import jakarta.security.auth.message.AuthException;
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.file.Files;
