@@ -11,8 +11,8 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
-import javax.security.auth.message.AuthException;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.security.auth.message.AuthException;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.InputStream;
 import java.util.Set;
 
