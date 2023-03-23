@@ -63,7 +63,9 @@ public class ExportRequestsListener {
     public void listen(String message) {
         try {
             ExportRequest exportRequest = gson.fromJson(message, ExportRequest.class);
-            Claims claims = Jwts.parser().parseClaimsJwt(exportRequest.getJwtToken()).getBody();
+            var tokenArray = exportRequest.getJwtToken().split("[.]");
+            var token = tokenArray[0] + "." + tokenArray[1] + ".";
+            Claims claims = Jwts.parserBuilder().build().parseClaimsJwt(token).getBody();
             String user = claims.getSubject();
             log.info("Export request received from user {}: {}", user, exportRequest);
             Collection<String> datasetIds = aaiService.getDatasetIds(exportRequest.getJwtToken());
