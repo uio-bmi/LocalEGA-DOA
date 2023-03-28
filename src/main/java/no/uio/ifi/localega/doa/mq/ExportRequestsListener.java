@@ -1,9 +1,9 @@
 package no.uio.ifi.localega.doa.mq;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import lombok.extern.slf4j.Slf4j;
@@ -63,8 +63,10 @@ public class ExportRequestsListener {
     public void listen(String message) {
         try {
             ExportRequest exportRequest = gson.fromJson(message, ExportRequest.class);
-            DecodedJWT decodedJWT = JWT.decode(exportRequest.getJwtToken());
-            String user = decodedJWT.getSubject();
+            var tokenArray = exportRequest.getJwtToken().split("[.]");
+            var token = tokenArray[0] + "." + tokenArray[1] + ".";
+            Claims claims = Jwts.parserBuilder().build().parseClaimsJwt(token).getBody();
+            String user = claims.getSubject();
             log.info("Export request received from user {}: {}", user, exportRequest);
             Collection<String> datasetIds = aaiService.getDatasetIds(exportRequest.getJwtToken());
             if (StringUtils.isNotEmpty(exportRequest.getDatasetId())) {
