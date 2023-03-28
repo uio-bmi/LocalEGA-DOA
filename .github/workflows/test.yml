@@ -32,21 +32,6 @@ jobs:
 
       - uses: actions/checkout@v3
       
-      - name: create maven settings.xml
-        uses: s4u/maven-settings-action@v2.8.0
-        with:
-          servers: |
-            [{
-              "id":"github-clearinghouse",
-              "username": "${{ secrets.GH_USER_FOR_MAVEN_ACTIONS }}",
-              "password": "${{ secrets.GH_PAT_FOR_MAVEN_ACTIONS}}"
-            },
-            {
-              "id":"github-crypt4gh",
-              "username": "${{ secrets.GH_USER_FOR_MAVEN_ACTIONS }}",
-              "password": "${{ secrets.GH_PAT_FOR_MAVEN_ACTIONS}}"
-            }]
-      
       - name: Set S3 env variables
         if: matrix.storagetype == 's3'
         run: |
@@ -83,6 +68,21 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
+            
+      - name: create maven settings.xml
+        uses: s4u/maven-settings-action@v2.8.0
+        with:
+          servers: |
+            [{
+              "id":"github-clearinghouse",
+              "username": "${{ secrets.GH_USER_FOR_MAVEN_ACTIONS }}",
+              "password": "${{ secrets.GH_PAT_FOR_MAVEN_ACTIONS}}"
+            },
+            {
+              "id":"github-crypt4gh",
+              "username": "${{ secrets.GH_USER_FOR_MAVEN_ACTIONS }}",
+              "password": "${{ secrets.GH_PAT_FOR_MAVEN_ACTIONS}}"
+            }]
 
       - name: Spring Boot Run
         run: nohup mvn -gs ~/.m2/settings.xml spring-boot:run --no-transfer-progress > nohup.out &
