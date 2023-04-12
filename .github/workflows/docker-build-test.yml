@@ -31,7 +31,7 @@ jobs:
             }]
 
       - name: Copy settings.xml to project root
-        shell: Bash
+        shell: bash
         run: cp /home/runner/.m2/settings.xml ./settings.xml
 
       - name: Build Docker image
