@@ -1,0 +1,35 @@
+name: Docker Build Test
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: create maven settings.xml
+        uses: s4u/maven-settings-action@v2.8.0
+        with:
+          settings-path: ${{ github.workspace }}/settings.xml
+          servers: |
+            [{
+              "id":"github-clearinghouse",
+              "username": "${{ secrets.GH_USER_FOR_MAVEN_ACTIONS }}",
+              "password": "${{ secrets.GH_PAT_FOR_MAVEN_ACTIONS }}"
+            },
+            {
+              "id":"github-crypt4gh",
+              "username": "${{ secrets.GH_USER_FOR_MAVEN_ACTIONS }}",
+              "password": "${{ secrets.GH_PAT_FOR_MAVEN_ACTIONS }}"
+            }]
+
+      - name: Build Docker image
+        run: docker build -t sda-doa:test .
