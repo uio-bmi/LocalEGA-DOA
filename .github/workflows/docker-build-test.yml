@@ -18,7 +18,6 @@ jobs:
       - name: create maven settings.xml
         uses: s4u/maven-settings-action@v2.8.0
         with:
-          settings-path: ${{ github.workspace }}/settings.xml
           servers: |
             [{
               "id":"github-clearinghouse",
