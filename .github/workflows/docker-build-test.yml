@@ -30,5 +30,9 @@ jobs:
               "password": "${{ secrets.GH_PAT_FOR_MAVEN_ACTIONS }}"
             }]
 
+      - name: Copy settings.xml to project root
+        shell: Bash
+        run: cp /home/runner/.m2/settings.xml ./settings.xml
+
       - name: Build Docker image
         run: docker build -t sda-doa:test .
