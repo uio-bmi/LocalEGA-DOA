@@ -32,6 +32,12 @@ jobs:
 
       - uses: actions/checkout@v3
 
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3.10.0
+        with:
+          distribution: zulu
+          java-version: ${{ matrix.java-version }}
+
       - name: Add Maven Github authentication
         run: |
           mkdir -p ~/.m2
@@ -55,12 +61,6 @@ jobs:
         run: |
           docker swarm init
           docker stack deploy DOA --compose-file docker-compose-${{ matrix.storagetype }}-outbox.yml
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3.10.0
-        with:
-          distribution: zulu
-          java-version: ${{ matrix.java-version }}
 
       - name: Sleep and Status check
         run: |
