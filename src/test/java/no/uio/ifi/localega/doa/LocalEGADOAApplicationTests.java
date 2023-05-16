@@ -16,14 +16,14 @@ import no.uio.ifi.crypt4gh.util.KeyUtils;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -40,7 +40,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 @Slf4j
-@RunWith(JUnit4.class)
+@ExtendWith(SpringExtension.class)
 class LocalEGADOAApplicationTests {
 
     private static String validToken;
@@ -102,85 +102,85 @@ class LocalEGADOAApplicationTests {
     @Test
     void testMetadataDatasetsNoToken() {
         int status = Unirest.get("http://localhost:8080/metadata/datasets").asJson().getStatus();
-        Assert.assertEquals(HttpStatus.UNAUTHORIZED.value(), status);
+        Assertions.assertEquals(HttpStatus.UNAUTHORIZED.value(), status);
     }
 
     @Test
     void testMetadataDatasetsInvalidToken() {
         int status = Unirest.get("http://localhost:8080/metadata/datasets").header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidToken).asJson().getStatus();
-        Assert.assertEquals(HttpStatus.UNAUTHORIZED.value(), status);
+        Assertions.assertEquals(HttpStatus.UNAUTHORIZED.value(), status);
     }
 
     @Test
     void testMetadataDatasetsValidToken() {
         HttpResponse<JsonNode> response = Unirest.get("http://localhost:8080/metadata/datasets").header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken).asJson();
         int status = response.getStatus();
-        Assert.assertEquals(HttpStatus.OK.value(), status);
+        Assertions.assertEquals(HttpStatus.OK.value(), status);
         JSONArray datasets = response.getBody().getArray();
-        Assert.assertEquals(1, datasets.length());
-        Assert.assertEquals("EGAD00010000919", datasets.getString(0));
+        Assertions.assertEquals(1, datasets.length());
+        Assertions.assertEquals("EGAD00010000919", datasets.getString(0));
     }
 
     @Test
     void testMetadataFilesNoToken() {
         int status = Unirest.get("http://localhost:8080/metadata/datasets/EGAD00010000919/files").asJson().getStatus();
-        Assert.assertEquals(HttpStatus.UNAUTHORIZED.value(), status);
+        Assertions.assertEquals(HttpStatus.UNAUTHORIZED.value(), status);
     }
 
     @Test
     void testMetadataFilesInvalidToken() {
         int status = Unirest.get("http://localhost:8080/metadata/datasets/EGAD00010000919/files").header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidToken).asJson().getStatus();
-        Assert.assertEquals(HttpStatus.UNAUTHORIZED.value(), status);
+        Assertions.assertEquals(HttpStatus.UNAUTHORIZED.value(), status);
     }
 
     @Test
     void testMetadataFilesValidTokenInvalidDataset() {
         HttpResponse<JsonNode> response = Unirest.get("http://localhost:8080/metadata/datasets/EGAD00010000920/files").header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken).asJson();
         int status = response.getStatus();
-        Assert.assertEquals(HttpStatus.FORBIDDEN.value(), status);
+        Assertions.assertEquals(HttpStatus.FORBIDDEN.value(), status);
     }
 
     @Test
     void testMetadataFilesValidTokenValidDataset() {
         HttpResponse<JsonNode> response = Unirest.get("http://localhost:8080/metadata/datasets/EGAD00010000919/files").header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken).asJson();
         int status = response.getStatus();
-        Assert.assertEquals(HttpStatus.OK.value(), status);
-        Assert.assertEquals("[{\"fileId\":\"EGAF00000000014\",\"datasetId\":\"EGAD00010000919\",\"displayFileName\":\"body.enc\",\"fileName\":\"test/body.enc\",\"fileStatus\":\"READY\"}]", response.getBody().toString());
+        Assertions.assertEquals(HttpStatus.OK.value(), status);
+        Assertions.assertEquals("[{\"fileId\":\"EGAF00000000014\",\"datasetId\":\"EGAD00010000919\",\"displayFileName\":\"body.enc\",\"fileName\":\"test/body.enc\",\"fileStatus\":\"READY\"}]", response.getBody().toString());
     }
 
     @Test
     void testStreamingNoToken() {
         int status = Unirest.get("http://localhost:8080/files/EGAF00000000014").asJson().getStatus();
-        Assert.assertEquals(HttpStatus.UNAUTHORIZED.value(), status);
+        Assertions.assertEquals(HttpStatus.UNAUTHORIZED.value(), status);
     }
 
     @Test
     void testStreamingInvalidToken() {
         int status = Unirest.get("http://localhost:8080/files/EGAF00000000014").header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidToken).asJson().getStatus();
-        Assert.assertEquals(HttpStatus.UNAUTHORIZED.value(), status);
+        Assertions.assertEquals(HttpStatus.UNAUTHORIZED.value(), status);
     }
 
     @Test
     void testStreamingValidTokenInvalidFile() {
         HttpResponse<JsonNode> response = Unirest.get("http://localhost:8080/files/EGAF00000000015").header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken).asJson();
         int status = response.getStatus();
-        Assert.assertEquals(HttpStatus.FORBIDDEN.value(), status);
+        Assertions.assertEquals(HttpStatus.FORBIDDEN.value(), status);
     }
 
     @Test
     void testStreamingValidTokenValidFileFullPlain() {
         HttpResponse<byte[]> response = Unirest.get("http://localhost:8080/files/EGAF00000000014").header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken).asBytes();
         int status = response.getStatus();
-        Assert.assertEquals(HttpStatus.OK.value(), status);
-        Assert.assertEquals("2aef808fb42fa7b1ba76cb16644773f9902a3fdc2569e8fdc049f38280c4577e", DigestUtils.sha256Hex(response.getBody()));
+        Assertions.assertEquals(HttpStatus.OK.value(), status);
+        Assertions.assertEquals("2aef808fb42fa7b1ba76cb16644773f9902a3fdc2569e8fdc049f38280c4577e", DigestUtils.sha256Hex(response.getBody()));
     }
 
     @Test
     void testStreamingValidTokenValidFileRangePlain() {
         HttpResponse<byte[]> response = Unirest.get("http://localhost:8080/files/EGAF00000000014?startCoordinate=100&endCoordinate=200").header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken).asBytes();
         int status = response.getStatus();
-        Assert.assertEquals(HttpStatus.OK.value(), status);
-        Assert.assertEquals("09fbeae7cce2cd410b471b0a1a265fb53dc54c66c4c7c3111b8b9b95ac0e956f", DigestUtils.sha256Hex(response.getBody()));
+        Assertions.assertEquals(HttpStatus.OK.value(), status);
+        Assertions.assertEquals("09fbeae7cce2cd410b471b0a1a265fb53dc54c66c4c7c3111b8b9b95ac0e956f", DigestUtils.sha256Hex(response.getBody()));
     }
 
     @SneakyThrows
@@ -190,11 +190,11 @@ class LocalEGADOAApplicationTests {
         PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/crypt4gh.sec.pem"), "password".toCharArray());
         HttpResponse<byte[]> response = Unirest.get("http://localhost:8080/files/EGAF00000000014?destinationFormat=crypt4gh").header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken).header("Public-Key", publicKey).asBytes();
         int status = response.getStatus();
-        Assert.assertEquals(HttpStatus.OK.value(), status);
+        Assertions.assertEquals(HttpStatus.OK.value(), status);
         try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(response.getBody());
              Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(byteArrayInputStream, privateKey)) {
             byte[] bytes = IOUtils.toByteArray(crypt4GHInputStream);
-            Assert.assertEquals("2aef808fb42fa7b1ba76cb16644773f9902a3fdc2569e8fdc049f38280c4577e", DigestUtils.sha256Hex(bytes));
+            Assertions.assertEquals("2aef808fb42fa7b1ba76cb16644773f9902a3fdc2569e8fdc049f38280c4577e", DigestUtils.sha256Hex(bytes));
         }
     }
 
@@ -205,11 +205,11 @@ class LocalEGADOAApplicationTests {
         PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/crypt4gh.sec.pem"), "password".toCharArray());
         HttpResponse<byte[]> response = Unirest.get("http://localhost:8080/files/EGAF00000000014?startCoordinate=100&endCoordinate=200&destinationFormat=crypt4gh").header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken).header("Public-Key", publicKey).asBytes();
         int status = response.getStatus();
-        Assert.assertEquals(HttpStatus.OK.value(), status);
+        Assertions.assertEquals(HttpStatus.OK.value(), status);
         try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(response.getBody());
              Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(byteArrayInputStream, privateKey)) {
             byte[] bytes = IOUtils.toByteArray(crypt4GHInputStream);
-            Assert.assertEquals("09fbeae7cce2cd410b471b0a1a265fb53dc54c66c4c7c3111b8b9b95ac0e956f", DigestUtils.sha256Hex(bytes));
+            Assertions.assertEquals("09fbeae7cce2cd410b471b0a1a265fb53dc54c66c4c7c3111b8b9b95ac0e956f", DigestUtils.sha256Hex(bytes));
         }
     }
 
@@ -217,7 +217,7 @@ class LocalEGADOAApplicationTests {
     @Test
     void testPOSIXExportRequestFileValidToken() {
         if (System.getenv("OUTBOX_TYPE").equals("S3")) {
-            Assert.assertTrue(true);
+            Assertions.assertTrue(true);
             return;
         }
         export("EGAF00000000014", false);
@@ -225,7 +225,7 @@ class LocalEGADOAApplicationTests {
         try (InputStream byteArrayInputStream = new FileInputStream("requester@elixir-europe.org/files/body.enc");
              Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(byteArrayInputStream, privateKey)) {
             byte[] bytes = IOUtils.toByteArray(crypt4GHInputStream);
-            Assert.assertEquals("2aef808fb42fa7b1ba76cb16644773f9902a3fdc2569e8fdc049f38280c4577e", DigestUtils.sha256Hex(bytes));
+            Assertions.assertEquals("2aef808fb42fa7b1ba76cb16644773f9902a3fdc2569e8fdc049f38280c4577e", DigestUtils.sha256Hex(bytes));
         }
     }
 
@@ -233,7 +233,7 @@ class LocalEGADOAApplicationTests {
     @Test
     void testPOSIXExportRequestDatasetValidToken() {
         if (System.getenv("OUTBOX_TYPE").equals("S3")) {
-            Assert.assertTrue(true);
+            Assertions.assertTrue(true);
             return;
         }
         export("EGAD00010000919", true);
@@ -241,7 +241,7 @@ class LocalEGADOAApplicationTests {
         try (InputStream byteArrayInputStream = new FileInputStream("requester@elixir-europe.org/files/body.enc");
              Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(byteArrayInputStream, privateKey)) {
             byte[] bytes = IOUtils.toByteArray(crypt4GHInputStream);
-            Assert.assertEquals("2aef808fb42fa7b1ba76cb16644773f9902a3fdc2569e8fdc049f38280c4577e", DigestUtils.sha256Hex(bytes));
+            Assertions.assertEquals("2aef808fb42fa7b1ba76cb16644773f9902a3fdc2569e8fdc049f38280c4577e", DigestUtils.sha256Hex(bytes));
         }
     }
 
@@ -249,7 +249,7 @@ class LocalEGADOAApplicationTests {
     @Test
     void testS3ExportRequestFileValidToken() {
         if (System.getenv("OUTBOX_TYPE").equals("POSIX")) {
-            Assert.assertTrue(true);
+            Assertions.assertTrue(true);
             return;
         }
         export("EGAF00000000014", false);
@@ -257,7 +257,7 @@ class LocalEGADOAApplicationTests {
         try (InputStream byteArrayInputStream = getMinioClient().getObject(GetObjectArgs.builder().bucket("lega").object("requester@elixir-europe.org/body.enc").build());
              Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(byteArrayInputStream, privateKey)) {
             byte[] bytes = IOUtils.toByteArray(crypt4GHInputStream);
-            Assert.assertEquals("2aef808fb42fa7b1ba76cb16644773f9902a3fdc2569e8fdc049f38280c4577e", DigestUtils.sha256Hex(bytes));
+            Assertions.assertEquals("2aef808fb42fa7b1ba76cb16644773f9902a3fdc2569e8fdc049f38280c4577e", DigestUtils.sha256Hex(bytes));
         }
     }
 
@@ -265,7 +265,7 @@ class LocalEGADOAApplicationTests {
     @Test
     void testS3ExportRequestDatasetValidToken() {
         if (System.getenv("OUTBOX_TYPE").equals("POSIX")) {
-            Assert.assertTrue(true);
+            Assertions.assertTrue(true);
             return;
         }
         export("EGAD00010000919", true);
@@ -273,7 +273,7 @@ class LocalEGADOAApplicationTests {
         try (InputStream byteArrayInputStream = getMinioClient().getObject(GetObjectArgs.builder().bucket("lega").object("requester@elixir-europe.org/body.enc").build());
              Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(byteArrayInputStream, privateKey)) {
             byte[] bytes = IOUtils.toByteArray(crypt4GHInputStream);
-            Assert.assertEquals("2aef808fb42fa7b1ba76cb16644773f9902a3fdc2569e8fdc049f38280c4577e", DigestUtils.sha256Hex(bytes));
+            Assertions.assertEquals("2aef808fb42fa7b1ba76cb16644773f9902a3fdc2569e8fdc049f38280c4577e", DigestUtils.sha256Hex(bytes));
         }
     }
 
