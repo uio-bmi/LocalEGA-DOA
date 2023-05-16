@@ -75,13 +75,13 @@ jobs:
           servers: |
             [{
               "id":"github-clearinghouse",
-              "username": "${{ secrets.GH_USER_FOR_MAVEN_ACTIONS }}",
-              "password": "${{ secrets.GH_PAT_FOR_MAVEN_ACTIONS }}"
+              "username": "${{github.actor}}",
+              "password": "${{ secrets.GITHUB_TOKEN }}"
             },
             {
               "id":"github-crypt4gh",
-              "username": "${{ secrets.GH_USER_FOR_MAVEN_ACTIONS }}",
-              "password": "${{ secrets.GH_PAT_FOR_MAVEN_ACTIONS }}"
+              "username": "${{github.actor}}",
+              "password": "${{ secrets.GITHUB_TOKEN }}"
             }]
 
       - name: Spring Boot Run
