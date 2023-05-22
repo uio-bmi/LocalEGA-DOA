@@ -17,7 +17,7 @@ jobs:
         fetch-depth: '1'
     - name: Bump version and push tag
       id: bump_tag
-      uses: anothrNick/github-tag-action@1.61.0
+      uses: anothrNick/github-tag-action@1.65.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         WITH_V: true
@@ -60,13 +60,13 @@ jobs:
           servers: |
             [{
               "id":"github-clearinghouse",
-              "username": "${{ secrets.GH_USER_FOR_MAVEN_ACTIONS }}",
-              "password": "${{ secrets.GH_PAT_FOR_MAVEN_ACTIONS }}"
+              "username": "${{ github.actor }}",
+              "password": "${{ secrets.GITHUB_TOKEN }}"
             },
             {
               "id":"github-crypt4gh",
-              "username": "${{ secrets.GH_USER_FOR_MAVEN_ACTIONS }}",
-              "password": "${{ secrets.GH_PAT_FOR_MAVEN_ACTIONS }}"
+              "username": "${{ github.actor }}",
+              "password": "${{ secrets.GITHUB_TOKEN }}"
             }]
 
       - name: Copy settings.xml to project root
