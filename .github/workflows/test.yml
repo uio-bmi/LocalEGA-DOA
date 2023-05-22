@@ -52,7 +52,7 @@ jobs:
           docker stack deploy DOA --compose-file docker-compose-${{ matrix.storagetype }}-outbox.yml
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3.10.0
+        uses: actions/setup-java@v3.11.0
         with:
           distribution: zulu
           java-version: ${{ matrix.java-version }}
@@ -75,13 +75,13 @@ jobs:
           servers: |
             [{
               "id":"github-clearinghouse",
-              "username": "${{ secrets.GH_USER_FOR_MAVEN_ACTIONS }}",
-              "password": "${{ secrets.GH_PAT_FOR_MAVEN_ACTIONS }}"
+              "username": "${{github.actor}}",
+              "password": "${{ secrets.GITHUB_TOKEN }}"
             },
             {
               "id":"github-crypt4gh",
-              "username": "${{ secrets.GH_USER_FOR_MAVEN_ACTIONS }}",
-              "password": "${{ secrets.GH_PAT_FOR_MAVEN_ACTIONS }}"
+              "username": "${{github.actor}}",
+              "password": "${{ secrets.GITHUB_TOKEN }}"
             }]
 
       - name: Spring Boot Run
