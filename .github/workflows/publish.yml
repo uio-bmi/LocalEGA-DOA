@@ -17,7 +17,7 @@ jobs:
         fetch-depth: '1'
     - name: Bump version and push tag
       id: bump_tag
-      uses: anothrNick/github-tag-action@1.61.0
+      uses: anothrNick/github-tag-action@1.65.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         WITH_V: true
@@ -34,21 +34,6 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
-
-      - name: create maven settings.xml
-        uses: s4u/maven-settings-action@v2.8.0
-        with:
-          servers: |
-            [{
-              "id":"github-clearinghouse",
-              "username": "${{ secrets.GH_USER_FOR_MAVEN_ACTIONS }}",
-              "password": "${{ secrets.GH_PAT_FOR_MAVEN_ACTIONS }}"
-            },
-            {
-              "id":"github-crypt4gh",
-              "username": "${{ secrets.GH_USER_FOR_MAVEN_ACTIONS }}",
-              "password": "${{ secrets.GH_PAT_FOR_MAVEN_ACTIONS }}"
-            }]
 
       - name: Log in to the Github Container registry
         uses: docker/login-action@v2
@@ -68,6 +53,25 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ghcr.io/${{ github.repository }}
+
+      - name: create maven settings.xml
+        uses: s4u/maven-settings-action@v2.8.0
+        with:
+          servers: |
+            [{
+              "id":"github-clearinghouse",
+              "username": "${{ github.actor }}",
+              "password": "${{ secrets.GITHUB_TOKEN }}"
+            },
+            {
+              "id":"github-crypt4gh",
+              "username": "${{ github.actor }}",
+              "password": "${{ secrets.GITHUB_TOKEN }}"
+            }]
+
+      - name: Copy settings.xml to project root
+        shell: bash
+        run: cp /home/runner/.m2/settings.xml ./settings.xml
       
       - name: Build and push
         uses: docker/build-push-action@v4
