@@ -1,11 +1,11 @@
-FROM maven:3.8.5-openjdk-17-slim as builder
+FROM maven:3.9.2-eclipse-temurin-17-alpine as builder
 
 COPY pom.xml .
 
 RUN mkdir -p /root/.m2 && \
     mkdir /root/.m2/repository
 
-COPY ~/.m2/settings.xml /root/.m2
+COPY settings.xml /root/.m2
 
 RUN mvn dependency:go-offline --no-transfer-progress
 
@@ -13,7 +13,7 @@ COPY src/ /src/
 
 RUN mvn clean install -DskipTests --no-transfer-progress
 
-FROM openjdk:18-alpine
+FROM eclipse-temurin:17-jre-alpine
 
 RUN apk add --no-cache ca-certificates openssl
 
