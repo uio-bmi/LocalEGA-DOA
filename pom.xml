@@ -5,8 +5,8 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.0.6</version>
-        <relativePath/>
+        <version>3.0.4</version>
+        <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>no.uio.ifi</groupId>
     <artifactId>localega-doa</artifactId>
@@ -74,7 +74,7 @@
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-jackson</artifactId>
-            <version>0.11.5</version>
+            <version>0.11.1</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -113,6 +113,17 @@
                 <artifactId>slf4j-jdk14</artifactId>
              </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.konghq</groupId>
+            <artifactId>unirest-java</artifactId>
+            <version>3.14.2</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
