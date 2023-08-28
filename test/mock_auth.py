@@ -9,7 +9,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 
 def generate_token():
     """Generate RSA Key pair to be used to sign token and the JWT Token itself."""
-    private_key = rsa.generate_private_key(public_exponent=65537, key_size=1024, backend=default_backend())
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048, backend=default_backend())
     public_key = private_key.public_key().public_bytes(encoding=serialization.Encoding.PEM,
                                                        format=serialization.PublicFormat.SubjectPublicKeyInfo)
     pem = private_key.private_bytes(encoding=serialization.Encoding.PEM,
