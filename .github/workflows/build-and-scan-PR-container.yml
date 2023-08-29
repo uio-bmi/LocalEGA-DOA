@@ -27,6 +27,10 @@ jobs:
               "password": "${{ secrets.GITHUB_TOKEN }}"
             }]
 
+      - name: Copy settings.xml to project root
+        shell: bash
+        run: cp /home/runner/.m2/settings.xml ./settings.xml
+
       - name: Log in to the Github Container registry
         uses: docker/login-action@v2
         with:
