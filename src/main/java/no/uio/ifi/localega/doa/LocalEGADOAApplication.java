@@ -1,7 +1,6 @@
 package no.uio.ifi.localega.doa;
 
 import io.minio.MinioClient;
-import io.minio.errors.*;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
@@ -63,12 +62,12 @@ public class LocalEGADOAApplication {
      */
     @Bean
     public MinioClient archiveClient(@Value("${s3.endpoint}") String s3Endpoint,
-                                   @Value("${s3.port}") int s3Port,
-                                   @Value("${s3.access-key}") String s3AccessKey,
-                                   @Value("${s3.secret-key}") String s3SecretKey,
-                                   @Value("${s3.region}") String s3Region,
-                                   @Value("${s3.secure}") boolean s3Secure,
-                                   @Value("${s3.root-ca}") String s3RootCA) throws GeneralSecurityException, ServerException, InsufficientDataException, InternalException, IOException, InvalidResponseException, InvalidBucketNameException, XmlParserException, ErrorResponseException, RegionConflictException {
+                                     @Value("${s3.port}") int s3Port,
+                                     @Value("${s3.access-key}") String s3AccessKey,
+                                     @Value("${s3.secret-key}") String s3SecretKey,
+                                     @Value("${s3.region}") String s3Region,
+                                     @Value("${s3.secure}") boolean s3Secure,
+                                     @Value("${s3.root-ca}") String s3RootCA) throws GeneralSecurityException {
         MinioClient.Builder builder = MinioClient.builder().endpoint(s3Endpoint, s3Port, s3Secure).region(s3Region).credentials(s3AccessKey, s3SecretKey);
         Optional<OkHttpClient> optionalOkHttpClient = buildOkHttpClient(s3RootCA);
         optionalOkHttpClient.ifPresent(builder::httpClient);
@@ -88,7 +87,7 @@ public class LocalEGADOAApplication {
                                     @Value("${s3.out.secret-key}") String s3SecretKey,
                                     @Value("${s3.out.region}") String s3Region,
                                     @Value("${s3.out.secure}") boolean s3Secure,
-                                    @Value("${s3.out.root-ca}") String s3RootCA) throws GeneralSecurityException, ServerException, InsufficientDataException, InternalException, IOException, InvalidResponseException, InvalidBucketNameException, XmlParserException, ErrorResponseException, RegionConflictException {
+                                    @Value("${s3.out.root-ca}") String s3RootCA) throws GeneralSecurityException {
         MinioClient.Builder builder = MinioClient.builder().endpoint(s3Endpoint, s3Port, s3Secure).region(s3Region).credentials(s3AccessKey, s3SecretKey);
         Optional<OkHttpClient> optionalOkHttpClient = buildOkHttpClient(s3RootCA);
         optionalOkHttpClient.ifPresent(builder::httpClient);
