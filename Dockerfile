@@ -13,7 +13,7 @@ COPY src/ /src/
 
 RUN mvn clean install -DskipTests --no-transfer-progress
 
-FROM eclipse-temurin:20-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 
 RUN apk -U upgrade && \
     apk add ca-certificates openssl && \
