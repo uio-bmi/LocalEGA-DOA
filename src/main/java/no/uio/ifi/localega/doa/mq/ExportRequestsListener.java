@@ -1,9 +1,9 @@
 package no.uio.ifi.localega.doa.mq;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Base64;
 import java.util.Collection;
 
 /**
@@ -64,9 +65,12 @@ public class ExportRequestsListener {
         try {
             ExportRequest exportRequest = gson.fromJson(message, ExportRequest.class);
             var tokenArray = exportRequest.getJwtToken().split("[.]");
-            var token = tokenArray[0] + "." + tokenArray[1] + ".";
-            Claims claims = Jwts.parserBuilder().build().parseClaimsJwt(token).getBody();
-            String user = claims.getSubject();
+            byte[] decodedHeader = Base64.getUrlDecoder().decode(tokenArray[1]);
+            String decodedHeaderString = new String(decodedHeader);
+
+            JsonObject claims = gson.fromJson(decodedHeaderString, JsonObject.class);
+
+            String user = claims.get(Claims.SUBJECT).getAsString();
             log.info("Export request received from user {}: {}", user, exportRequest);
             Collection<String> datasetIds = aaiService.getDatasetIds(exportRequest.getJwtToken());
             if (StringUtils.isNotEmpty(exportRequest.getDatasetId())) {

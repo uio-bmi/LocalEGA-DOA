@@ -1,7 +1,7 @@
 package no.uio.ifi.localega.doa.services;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.clearinghouse.Clearinghouse;
 import no.uio.ifi.clearinghouse.model.Visa;
@@ -46,9 +46,12 @@ public class AAIService {
         Collection<Visa> visas = new ArrayList<>();
         if (StringUtils.countMatches(accessToken, '.') == 2) { // JWT access token
             var tokenArray = accessToken.split("[.]");
-            var token = tokenArray[0] + "." + tokenArray[1] + ".";
-            Claims claims = Jwts.parserBuilder().build().parseClaimsJwt(token).getBody();
-            boolean isVisa = claims.containsKey("ga4gh_visa_v1");
+            byte[] decodedHeader = Base64.getUrlDecoder().decode(tokenArray[0]);
+            String decodedHeaderString = new String(decodedHeader);
+            Gson gson = new Gson();
+            Set<String> claims = gson.fromJson(decodedHeaderString, JsonObject.class).keySet();
+
+            boolean isVisa = claims.contains("ga4gh_visa_v1");
             if (isVisa) {
                 getVisa(accessToken).ifPresent(visas::add);
             } else {
