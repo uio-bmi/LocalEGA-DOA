@@ -17,7 +17,7 @@ jobs:
       packages: write
     steps:
       - name: Delete 'PR' containers older than a week
-        uses: snok/container-retention-policy@v2.1.3
+        uses: snok/container-retention-policy@v2.2.1
         with:
           image-names: sda-doa
           filter-tags: PR*, sha-*
@@ -28,7 +28,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Delete all containers older than treee months, using a wildcard
-        uses: snok/container-retention-policy@v2.1.3
+        uses: snok/container-retention-policy@v2.2.1
         with:
           image-names: sda-doa
           filter-tags: v*
