@@ -25,7 +25,7 @@ jobs:
           account-type: org
           org-name: ${{ github.repository_owner }}
           keep-at-least: 1
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GHRC_CNTNR_CLNUP }}
 
       - name: Delete all containers older than treee months, using a wildcard
         uses: snok/container-retention-policy@v2.2.1
@@ -37,4 +37,4 @@ jobs:
           org-name: ${{ github.repository_owner }}
           keep-at-least: 2
           skip-tags: latest
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GHRC_CNTNR_CLNUP }}
