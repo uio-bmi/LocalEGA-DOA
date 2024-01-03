@@ -97,7 +97,7 @@ public class StreamingService {
         ByteArrayInputStream headerInputStream = new ByteArrayInputStream(header);
         SequenceInputStream sequenceInputStream = new SequenceInputStream(headerInputStream, bodyInputStream);
         Crypt4GHInputStream crypt4GHInputStream;
-        if (!StringUtils.isEmpty(startCoordinate) && !StringUtils.isEmpty(endCoordinate)) {
+        if (StringUtils.hasLength(startCoordinate) && StringUtils.hasLength(endCoordinate)) {
             DataEditList dataEditList = new DataEditList(new long[]{Long.parseLong(startCoordinate), Long.parseLong(endCoordinate)});
             crypt4GHInputStream = new Crypt4GHInputStream(sequenceInputStream, dataEditList, privateKey);
         } else {
@@ -109,7 +109,7 @@ public class StreamingService {
     private InputStream getEncryptedResponse(byte[] header, InputStream bodyInputStream, PrivateKey privateKey, String startCoordinate, String endCoordinate, String publicKey) throws GeneralSecurityException, IOException {
         PublicKey recipientPublicKey = KeyUtils.getInstance().readPublicKey(publicKey);
         Header newHeader = Crypt4GHUtils.getInstance().setRecipient(header, privateKey, recipientPublicKey);
-        if (!StringUtils.isEmpty(startCoordinate) && !StringUtils.isEmpty(endCoordinate)) {
+        if (StringUtils.hasLength(startCoordinate) && StringUtils.hasLength(endCoordinate)) {
             DataEditList dataEditList = new DataEditList(new long[]{Long.parseLong(startCoordinate), Long.parseLong(endCoordinate)});
             HeaderPacket dataEditListHeaderPacket = new X25519ChaCha20IETFPoly1305HeaderPacket(dataEditList, privateKey, recipientPublicKey);
             newHeader.getHeaderPackets().add(dataEditListHeaderPacket);
