@@ -12,7 +12,7 @@ jobs:
       fail-fast: true
       matrix: 
         storagetype: [s3, posix]
-        java-version: [17]
+        java-version: [21]
 
     env:
       SSL_ENABLED: false
@@ -51,7 +51,7 @@ jobs:
           docker swarm init
           docker stack deploy DOA --compose-file docker-compose-${{ matrix.storagetype }}-outbox.yml
 
-      - name: Set up JDK 17
+      - name: Set up JDK
         uses: actions/setup-java@v4.0.0
         with:
           distribution: zulu
