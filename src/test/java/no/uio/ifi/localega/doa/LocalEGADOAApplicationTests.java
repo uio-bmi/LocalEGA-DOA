@@ -46,29 +46,37 @@ class LocalEGADOAApplicationTests {
     @SneakyThrows
     @BeforeAll
     public static void setup() {
-        String url = String.format("jdbc:postgresql://%s:%s/%s", "localhost", "5432", "lega");
+        String url = String.format("jdbc:postgresql://%s:%s/%s", "localhost", "5432", "sda");
         Properties props = new Properties();
-        props.setProperty("user", "lega_in");
-        props.setProperty("password", "password");
-        props.setProperty("ssl", "true");
+        props.setProperty("user", "postgres");
+        props.setProperty("password", "passwd");
+//        props.setProperty("ssl", "true");
         props.setProperty("application_name", "LocalEGA");
-        props.setProperty("sslmode", "verify-full");
-        props.setProperty("sslrootcert", new File("test/rootCA.pem").getAbsolutePath());
-        props.setProperty("sslcert", new File("test/localhost-client.pem").getAbsolutePath());
-        props.setProperty("sslkey", new File("test/localhost-client-key.der").getAbsolutePath());
+//        props.setProperty("sslmode", "disable");
+//        props.setProperty("sslrootcert", new File("test/rootCA.pem").getAbsolutePath());
+//        props.setProperty("sslcert", new File("test/localhost-client.pem").getAbsolutePath());
+//        props.setProperty("sslkey", new File("test/localhost-client-key.der").getAbsolutePath());
         Connection connection = DriverManager.getConnection(url, props);
         PreparedStatement file = connection.prepareStatement("SELECT local_ega.insert_file('body.enc','requester@elixir-europe.org');");
-        file.executeQuery();
+//        file.executeQuery();
         PreparedStatement header = connection.prepareStatement("UPDATE local_ega.files SET header = '637279707434676801000000010000006c00000000000000aa7ad1bb4f93bf5e4fb3bc28a95bc4d80bf2fd8075e69eb2ee15e0a4f08f1d78ab98c8fd9b50e675f71311936e8d0c6f73538962b836355d5d4371a12eae46addb43518b5236fb9554249710a473026f34b264a61d2ba52ed11abc1efa1d3478fa40a710' WHERE id = 1;");
         header.executeUpdate();
         PreparedStatement finalize = connection.prepareStatement("UPDATE local_ega.files SET archive_path = 'test/body.enc', status = 'READY', stable_id = 'EGAF00000000014' WHERE id = 1;");
         finalize.executeUpdate();
         connection.close();
 
-        props.setProperty("user", "lega_out");
+//        props.setProperty("user", "lega_out");
         connection = DriverManager.getConnection(url, props);
         PreparedStatement dataset = connection.prepareStatement("INSERT INTO local_ega_ebi.filedataset(file_id, dataset_stable_id) values(1, 'EGAD00010000919');");
         dataset.executeUpdate();
+
+        PreparedStatement dataset_event_registered = connection.prepareStatement(prepareInsertQueryDatasetEvent("EGAD00010000919", "registered", "mapping"));
+        dataset_event_registered.executeUpdate();
+
+        Thread.sleep(1000 * 3);
+
+        PreparedStatement dataset_event_released = connection.prepareStatement(prepareInsertQueryDatasetEvent("EGAD00010000919", "released", "release"));
+        dataset_event_released.executeUpdate();
         connection.close();
 
         JSONArray tokens = Unirest.get("http://localhost:8000/tokens").asJson().getBody().getArray();
@@ -301,4 +309,8 @@ class LocalEGADOAApplicationTests {
         return MinioClient.builder().endpoint("localhost", 9000, false).region("us-west-1").credentials("minio", "miniostorage").build();
     }
 
+
+    private static String prepareInsertQueryDatasetEvent(String datasetId, String event, String msgType) {
+        return String.format("INSERT INTO sda.dataset_event_log(dataset_id, event, message) VALUES('%s','%s','{\"type\": \"%s\"}');", datasetId, event, msgType);
+    }
 }

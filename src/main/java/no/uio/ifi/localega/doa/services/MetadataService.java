@@ -2,7 +2,9 @@ package no.uio.ifi.localega.doa.services;
 
 import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.localega.doa.dto.File;
+import no.uio.ifi.localega.doa.model.DatasetEventLog;
 import no.uio.ifi.localega.doa.model.LEGADataset;
+import no.uio.ifi.localega.doa.repositories.DatasetEventLogRepository;
 import no.uio.ifi.localega.doa.repositories.DatasetRepository;
 import no.uio.ifi.localega.doa.repositories.FileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,9 @@ public class MetadataService {
     @Autowired
     private DatasetRepository datasetRepository;
 
+    @Autowired
+    private DatasetEventLogRepository datasetEventLogRepository;
+
     /**
      * Returns collection of dataset IDs present in the databse.
      *
@@ -49,7 +54,7 @@ public class MetadataService {
                 .stream()
                 .filter(Objects::nonNull)
                 .map(LEGADataset::getFileId)
-                .map(f -> fileRepository.findById(f))
+                .map(fileRepository::findById)
                 .flatMap(Optional::stream)
                 .map(f -> {
                     File file = new File();
@@ -76,6 +81,11 @@ public class MetadataService {
      */
     public String getFileName(String fileId) {
         return fileRepository.findById(fileId).orElseThrow(RuntimeException::new).getDisplayFileName();
+    }
+
+    public DatasetEventLog findLatestByDatasetId(String datasetId) {
+        Optional<DatasetEventLog> optionalDatasetEventLog = datasetEventLogRepository.findFirstByDatasetIdOrderByEventDateDesc(datasetId);
+        return optionalDatasetEventLog.orElse(null);
     }
 
 }

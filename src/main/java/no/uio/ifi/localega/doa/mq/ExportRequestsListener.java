@@ -9,6 +9,7 @@ import io.minio.PutObjectArgs;
 import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.localega.doa.dto.DestinationFormat;
 import no.uio.ifi.localega.doa.dto.ExportRequest;
+import no.uio.ifi.localega.doa.model.DatasetEventLog;
 import no.uio.ifi.localega.doa.services.AAIService;
 import no.uio.ifi.localega.doa.services.MetadataService;
 import no.uio.ifi.localega.doa.services.StreamingService;
@@ -93,13 +94,24 @@ public class ExportRequestsListener {
                                String publicKey,
                                String startCoordinate,
                                String endCoordinate) {
-        metadataService.files(datasetId).forEach(f -> {
-            try {
-                exportFile(user, datasetIds, f.getFileId(), publicKey, startCoordinate, endCoordinate);
-            } catch (Exception e) {
-                throw new RuntimeException(e.getMessage(), e);
+
+        DatasetEventLog latestEvent = metadataService.findLatestByDatasetId(datasetId);
+        if (latestEvent != null) {
+            String event = latestEvent.getEvent();
+            if (event.equals("released")) {
+                metadataService.files(datasetId).forEach(f -> {
+                    try {
+                        exportFile(user, datasetIds, f.getFileId(), publicKey, startCoordinate, endCoordinate);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e.getMessage(), e);
+                    }
+                });
+            } else {
+                log.info("Cannot export. Dataset {} is not released, it is {}", datasetId, event);
             }
-        });
+        } else {
+            log.info("Cannot export. No event has been registered for Dataset {}", datasetId);
+        }
     }
 
     private void exportFile(String user,
@@ -110,14 +122,9 @@ public class ExportRequestsListener {
                             String endCoordinate) throws Exception {
         log.info("Outbox type: {}", outboxType);
         switch (outboxType) {
-            case "POSIX":
-                exportFilePOSIX(user, datasetIds, fileId, publicKey, startCoordinate, endCoordinate);
-                break;
-            case "S3":
-                exportFileS3(user, datasetIds, fileId, publicKey, startCoordinate, endCoordinate);
-                break;
-            default:
-                throw new RuntimeException("Unknown outbox type: " + outboxType);
+            case "POSIX" -> exportFilePOSIX(user, datasetIds, fileId, publicKey, startCoordinate, endCoordinate);
+            case "S3" -> exportFileS3(user, datasetIds, fileId, publicKey, startCoordinate, endCoordinate);
+            default -> throw new RuntimeException("Unknown outbox type: " + outboxType);
         }
     }
 
