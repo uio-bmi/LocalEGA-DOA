@@ -51,7 +51,6 @@ public class AAIService {
             Gson gson = new Gson();
             Set<String> claims = gson.fromJson(decodedPayloadString, JsonObject.class).keySet();
 
-
             boolean isVisa = claims.contains("ga4gh_visa_v1");
             if (isVisa) {
                 getVisa(accessToken).ifPresent(visas::add);
