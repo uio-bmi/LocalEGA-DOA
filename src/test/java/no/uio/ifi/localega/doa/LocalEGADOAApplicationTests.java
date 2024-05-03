@@ -49,7 +49,7 @@ class LocalEGADOAApplicationTests {
         String url = String.format("jdbc:postgresql://%s:%s/%s", "localhost", "5432", "sda");
         Properties props = new Properties();
         props.setProperty("user", "postgres");
-        props.setProperty("password", "passwd");
+        props.setProperty("password", "rootpasswd");
 //        props.setProperty("ssl", "true");
         props.setProperty("application_name", "LocalEGA");
 //        props.setProperty("sslmode", "disable");
