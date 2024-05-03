@@ -44,12 +44,12 @@ public class AAIService {
      */
     public Collection<String> getDatasetIds(String accessToken) {
         Collection<Visa> visas = new ArrayList<>();
-        if (StringUtils.countMatches(accessToken, '.') == 2) { // JWT access token
+        if (StringUtils.countMatches(accessToken, '.') == 2) { 
             var tokenArray = accessToken.split("[.]");
-            byte[] decodedHeader = Base64.getUrlDecoder().decode(tokenArray[0]);
-            String decodedHeaderString = new String(decodedHeader);
+            byte[] decodedPayload = Base64.getUrlDecoder().decode(tokenArray[1]);
+            String decodedPayloadString = new String(decodedPayload);
             Gson gson = new Gson();
-            Set<String> claims = gson.fromJson(decodedHeaderString, JsonObject.class).keySet();
+            Set<String> claims = gson.fromJson(decodedPayloadString, JsonObject.class).keySet();
 
             boolean isVisa = claims.contains("ga4gh_visa_v1");
             if (isVisa) {
