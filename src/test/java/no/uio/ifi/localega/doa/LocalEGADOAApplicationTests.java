@@ -46,7 +46,7 @@ class LocalEGADOAApplicationTests {
     @SneakyThrows
     @BeforeAll
     public static void setup() {
-        String url = String.format("jdbc:postgresql://%s:%s/%s", "129.177.177.157", "5432", "sda");
+        String url = String.format("jdbc:postgresql://%s:%s/%s", "localhost", "5432", "sda");
         Properties props = new Properties();
 //        props.setProperty("user", "lega_in"); //will be used when lega_in user is set in db again
         props.setProperty("user", "postgres");
