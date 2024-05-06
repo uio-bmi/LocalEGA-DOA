@@ -3,16 +3,17 @@ version: '3.3'
 services:
 
   db:
-    image: neicnordic/sda-db:latest
+    image: ghcr.io/neicnordic/sensitive-data-archive:v0.3.47-postgres
     ports:
       - 5432:5432
     environment:
       - DB_LEGA_IN_PASSWORD=password
       - DB_LEGA_OUT_PASSWORD=password
-      - PG_SERVER_CERT=/etc/ega/pg.cert
-      - PG_SERVER_KEY=/etc/ega/pg.key
-      - PG_CA=/etc/ega/CA.cert
+      - POSTGRES_SERVER_CERT=/etc/ega/pg.cert
+      - POSTGRES_SERVER_KEY=/etc/ega/pg.key
+      - POSTGRES_SERVER_CACERT=/etc/ega/CA.cert
       - PG_VERIFY_PEER=1
+      - POSTGRES_PASSWORD=rootpasswd
     secrets:
       - source: server.pem
         target: /etc/ega/pg.cert

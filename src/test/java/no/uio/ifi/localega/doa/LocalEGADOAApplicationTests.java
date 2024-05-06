@@ -46,10 +46,11 @@ class LocalEGADOAApplicationTests {
     @SneakyThrows
     @BeforeAll
     public static void setup() {
-        String url = String.format("jdbc:postgresql://%s:%s/%s", "localhost", "5432", "lega");
+        String url = String.format("jdbc:postgresql://%s:%s/%s", "localhost", "5432", "sda");
         Properties props = new Properties();
-        props.setProperty("user", "lega_in");
-        props.setProperty("password", "password");
+//        props.setProperty("user", "lega_in"); //will be used when lega_in user is set in db again
+        props.setProperty("user", "postgres");
+        props.setProperty("password", "rootpasswd");
         props.setProperty("ssl", "true");
         props.setProperty("application_name", "LocalEGA");
         props.setProperty("sslmode", "verify-full");
@@ -65,10 +66,18 @@ class LocalEGADOAApplicationTests {
         finalize.executeUpdate();
         connection.close();
 
-        props.setProperty("user", "lega_out");
+//        props.setProperty("user", "lega_out"); //will be used when lega_out user is set in db again
         connection = DriverManager.getConnection(url, props);
         PreparedStatement dataset = connection.prepareStatement("INSERT INTO local_ega_ebi.filedataset(file_id, dataset_stable_id) values(1, 'EGAD00010000919');");
         dataset.executeUpdate();
+
+        PreparedStatement dataset_event_registered = connection.prepareStatement(prepareInsertQueryDatasetEvent("EGAD00010000919", "registered", "mapping"));
+        dataset_event_registered.executeUpdate();
+
+        Thread.sleep(1000 * 3);
+
+        PreparedStatement dataset_event_released = connection.prepareStatement(prepareInsertQueryDatasetEvent("EGAD00010000919", "released", "release"));
+        dataset_event_released.executeUpdate();
         connection.close();
 
         JSONArray tokens = Unirest.get("http://localhost:8000/tokens").asJson().getBody().getArray();
@@ -301,4 +310,8 @@ class LocalEGADOAApplicationTests {
         return MinioClient.builder().endpoint("localhost", 9000, false).region("us-west-1").credentials("minio", "miniostorage").build();
     }
 
+
+    private static String prepareInsertQueryDatasetEvent(String datasetId, String event, String msgType) {
+        return String.format("INSERT INTO sda.dataset_event_log(dataset_id, event, message) VALUES('%s','%s','{\"type\": \"%s\"}');", datasetId, event, msgType);
+    }
 }

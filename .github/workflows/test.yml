@@ -22,7 +22,7 @@ jobs:
       ROOT_CERT_PATH: test/rootCA.pem
       CERT_PATH: test/localhost-client.pem
       CERT_KEY: test/localhost-client-key.der
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: rootpasswd
       OPENID_CONFIGURATION_URL: http://localhost:8000/openid-configuration
       USERINFO_ENDPOINT_URL: http://localhost:8000/userinfo
       CRYPT4GH_PRIVATE_KEY_PATH: test/crypt4gh.sec.pem
