@@ -9,10 +9,10 @@ services:
     environment:
       - DB_LEGA_IN_PASSWORD=password
       - DB_LEGA_OUT_PASSWORD=password
-      - PG_SERVER_CERT=/etc/ega/pg.cert
-      - PG_SERVER_KEY=/etc/ega/pg.key
-      - PG_CA=/etc/ega/CA.cert
-      - PG_VERIFY_PEER=verify-ca
+      - POSTGRES_SERVER_CERT=/etc/ega/pg.cert
+      - POSTGRES_SERVER_KEY=/etc/ega/pg.key
+      - POSTGRES_SERVER_CACERT=/etc/ega/CA.cert
+      - PG_VERIFY_PEER=1
       - POSTGRES_PASSWORD=rootpasswd
     secrets:
       - source: server.pem

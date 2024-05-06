@@ -46,16 +46,17 @@ class LocalEGADOAApplicationTests {
     @SneakyThrows
     @BeforeAll
     public static void setup() {
-        String url = String.format("jdbc:postgresql://%s:%s/%s", "localhost", "5432", "sda");
+        String url = String.format("jdbc:postgresql://%s:%s/%s", "129.177.177.157", "5432", "sda");
         Properties props = new Properties();
+//        props.setProperty("user", "lega_in"); //will be used when lega_in user is set in db again
         props.setProperty("user", "postgres");
         props.setProperty("password", "rootpasswd");
-//        props.setProperty("ssl", "true");
+        props.setProperty("ssl", "true");
         props.setProperty("application_name", "LocalEGA");
-//        props.setProperty("sslmode", "disable");
-//        props.setProperty("sslrootcert", new File("test/rootCA.pem").getAbsolutePath());
-//        props.setProperty("sslcert", new File("test/localhost-client.pem").getAbsolutePath());
-//        props.setProperty("sslkey", new File("test/localhost-client-key.der").getAbsolutePath());
+        props.setProperty("sslmode", "verify-full");
+        props.setProperty("sslrootcert", new File("test/rootCA.pem").getAbsolutePath());
+        props.setProperty("sslcert", new File("test/localhost-client.pem").getAbsolutePath());
+        props.setProperty("sslkey", new File("test/localhost-client-key.der").getAbsolutePath());
         Connection connection = DriverManager.getConnection(url, props);
         PreparedStatement file = connection.prepareStatement("SELECT local_ega.insert_file('body.enc','requester@elixir-europe.org');");
         file.executeQuery();
@@ -65,7 +66,7 @@ class LocalEGADOAApplicationTests {
         finalize.executeUpdate();
         connection.close();
 
-//        props.setProperty("user", "lega_out");
+//        props.setProperty("user", "lega_out"); //will be used when lega_out user is set in db again
         connection = DriverManager.getConnection(url, props);
         PreparedStatement dataset = connection.prepareStatement("INSERT INTO local_ega_ebi.filedataset(file_id, dataset_stable_id) values(1, 'EGAD00010000919');");
         dataset.executeUpdate();
