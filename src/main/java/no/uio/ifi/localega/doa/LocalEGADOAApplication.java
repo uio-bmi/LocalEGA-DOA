@@ -35,7 +35,6 @@ public class LocalEGADOAApplication {
      */
     public static void main(String[] args) {
         SpringApplication application = new SpringApplication(LocalEGADOAApplication.class);
-
         Properties properties = new Properties();
         String rootCertPath = System.getenv("ROOT_CERT_PATH");
         String rootCertPass = System.getenv("ROOT_CERT_PASSWORD");
