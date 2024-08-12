@@ -23,7 +23,7 @@ jobs:
           image-tags: "PR* sha-* !latest"
           cut-off: 1w
           account:  ${{ github.repository_owner }}
-          keep-at-least: 1
+          keep-n-most-recent: 1
           token: ${{ secrets.GHRC_CNTNR_CLNUP }}
 
       - name: Delete all containers older than three months, using a wildcard
@@ -33,5 +33,5 @@ jobs:
           image-tags: "v* !latest"
           cut-off: 3months
           account: ${{ github.repository_owner }}
-          keep-at-least: 2
+          keep-n-most-recent: 2
           token: ${{ secrets.GHRC_CNTNR_CLNUP }}
