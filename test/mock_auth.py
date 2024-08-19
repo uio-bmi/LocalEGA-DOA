@@ -1,25 +1,18 @@
 """Mock OAUTH2 aiohttp.web server."""
 
 from aiohttp import web
-from authlib.jose import jwt, jwk
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
+from authlib.jose import jwt, RSAKey
 
 
 def generate_token():
     """Generate RSA Key pair to be used to sign token and the JWT Token itself."""
-    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048, backend=default_backend())
-    public_key = private_key.public_key().public_bytes(encoding=serialization.Encoding.PEM,
-                                                       format=serialization.PublicFormat.SubjectPublicKeyInfo)
-    pem = private_key.private_bytes(encoding=serialization.Encoding.PEM,
-                                    format=serialization.PrivateFormat.TraditionalOpenSSL,
-                                    encryption_algorithm=serialization.NoEncryption())
+    key = RSAKey.generate_key(is_private=True)
+
     # we set no `exp` and other claims as they are optional in a real scenario these should be set
     # See available claims here: https://www.iana.org/assignments/jwt/jwt.xhtml
     # the important claim is the "authorities"
     header = {
-        "jku": "http://localhost:8000/jwk",
+        "jku": "http://129.177.177.157:8000/jwk",
         "kid": "rsa1",
         "alg": "RS256",
         "typ": "JWT"
@@ -29,14 +22,14 @@ def generate_token():
         "aud": ["aud2", "aud3"],
         "azp": "azp",
         "scope": "openid ga4gh_passport_v1",
-        "iss": "http://localhost:8000/",
+        "iss": "http://129.177.177.157:8000/",
         "exp": 9999999999,
         "iat": 1561621913,
         "jti": "6ad7aa42-3e9c-4833-bd16-765cb80c2102"
     }
     empty_payload = {
         "sub": "requester@elixir-europe.org",
-        "iss": "http://localhost:8000/",
+        "iss": "http://129.177.177.157:8000/",
         "exp": 99999999999,
         "iat": 1547794655,
         "jti": "6ad7aa42-3e9c-4833-bd16-765cb80c2102"
@@ -44,7 +37,7 @@ def generate_token():
     # Craft 4 passports, 2 for bona fide status and 2 for dataset permissions
     # passport for bona fide: terms
     passport_terms = {
-        "iss": "http://localhost:8000/",
+        "iss": "http://129.177.177.157:8000/",
         "sub": "requester@elixir-europe.org",
         "ga4gh_visa_v1": {
             "type": "AcceptedTermsAndPolicies",
@@ -59,7 +52,7 @@ def generate_token():
     }
     # passport for bona fide: status
     passport_status = {
-        "iss": "http://localhost:8000/",
+        "iss": "http://129.177.177.157:8000/",
         "sub": "requester@elixir-europe.org",
         "ga4gh_visa_v1": {
             "type": "ResearcherStatus",
@@ -74,7 +67,7 @@ def generate_token():
     }
     # passport for dataset permissions 1
     passport_dataset1 = {
-        "iss": "http://localhost:8000/",
+        "iss": "http://129.177.177.157:8000/",
         "sub": "requester@elixir-europe.org",
         "ga4gh_visa_v1": {
             "type": "ControlledAccessGrants",
@@ -89,7 +82,7 @@ def generate_token():
     }
     # passport for dataset permissions 2
     passport_dataset2 = {
-        "iss": "http://localhost:8000/",
+        "iss": "http://129.177.177.157:8000/",
         "sub": "requester@elixir-europe.org",
         "ga4gh_visa_v1": {
             "type": "ControlledAccessGrants",
@@ -102,8 +95,8 @@ def generate_token():
         "exp": 99999999999,
         "jti": "9fa600d6-4148-47c1-b708-36c4ba2e980e"
     }
-    public_jwk = jwk.dumps(public_key, kty='RSA')
-    private_jwk = jwk.dumps(pem, kty='RSA')
+    public_jwk = key.as_dict(is_private=False)
+    private_jwk = dict(key)
     dataset_encoded = jwt.encode(header, dataset_payload, private_jwk).decode('utf-8')
     empty_encoded = jwt.encode(header, empty_payload, private_jwk).decode('utf-8')
     passport_terms_encoded = jwt.encode(header, passport_terms, private_jwk).decode('utf-8')
@@ -120,7 +113,7 @@ DATA = generate_token()
 async def jwk_response(request):
     """Mock JSON Web Key server."""
     keys = [DATA[0]]
-    keys[0]['kid'] = 'rsa1'
+    keys[0]["kid"] = "rsa1"
     data = {
         "keys" : keys
     }
@@ -152,7 +145,7 @@ async def userinfo(request):
 async def openid_configuration(request):
     """Mock ELIXIR AAI OpenID configuration endpoint."""
     data = {
-        "jwks_uri": "http://localhost:8000/jwk"
+        "jwks_uri": "http://129.177.177.157:8000/jwk"
     }
     return web.json_response(data)
 
