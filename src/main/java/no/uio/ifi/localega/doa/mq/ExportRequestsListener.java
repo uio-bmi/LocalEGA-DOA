@@ -74,8 +74,14 @@ public class ExportRequestsListener {
             String user = claims.get(Claims.SUBJECT).getAsString();
             log.info("Export request received from user {}: {}", user, exportRequest);
             Collection<String> datasetIds = aaiService.getDatasetIds(exportRequest.getJwtToken());
-            if (StringUtils.isNotEmpty(exportRequest.getDatasetId())) {
-                exportDataset(user, datasetIds, exportRequest.getDatasetId(), exportRequest.getPublicKey(), exportRequest.getStartCoordinate(), exportRequest.getEndCoordinate());
+            String datasetId = exportRequest.getDatasetId();
+            if (StringUtils.isNotEmpty(datasetId)) {
+                if (metadataService.findByReferenceId(datasetId) != null) {
+                    Integer id = metadataService.findByReferenceId(datasetId).getDatasetId();
+                    datasetId = metadataService.getDataset(id).getStableId();
+                    log.info("Reference id {} mapped to dataset id {}", exportRequest.getDatasetId(), datasetId);
+                }
+                exportDataset(user, datasetIds, datasetId, exportRequest.getPublicKey(), exportRequest.getStartCoordinate(), exportRequest.getEndCoordinate());
             } else if (StringUtils.isNotEmpty(exportRequest.getFileId())) {
                 exportFile(user, datasetIds, exportRequest.getFileId(), exportRequest.getPublicKey(), exportRequest.getStartCoordinate(), exportRequest.getEndCoordinate());
             } else {
