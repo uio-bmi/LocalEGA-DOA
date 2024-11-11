@@ -1,15 +1,11 @@
 version: 2
 registries:
-  maven-github-uio-bmi:
+  maven-github-elixir-no:
     type: maven-repository
-    url: 'https://maven.pkg.github.com/uio-bmi'
+    url: 'https://maven.pkg.github.com/ELIXIR-NO'
     username: '${{secrets.MAVEN_USER}}'
     password: '${{secrets.MAVEN_GITHUB}}'
-  maven-github-elixir-oslo:
-    type: maven-repository
-    url: 'https://maven.pkg.github.com/elixir-oslo'
-    username: '${{secrets.MAVEN_USER}}'
-    password: '${{secrets.MAVEN_GITHUB}}'
+
 updates:
 - package-ecosystem: maven
   directory: "/"
