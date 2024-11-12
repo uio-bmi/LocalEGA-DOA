@@ -20,12 +20,7 @@ jobs:
         with:
           servers: |
             [{
-              "id":"github-clearinghouse",
-              "username": "${{ github.actor }}",
-              "password": "${{ secrets.GITHUB_TOKEN }}"
-            },
-            {
-              "id":"github-crypt4gh",
+              "id":"github-fega-norway",
               "username": "${{ github.actor }}",
               "password": "${{ secrets.GITHUB_TOKEN }}"
             }]
