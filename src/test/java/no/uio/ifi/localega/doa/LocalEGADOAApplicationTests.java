@@ -53,10 +53,10 @@ class LocalEGADOAApplicationTests {
         props.setProperty("password", "rootpasswd");
         props.setProperty("ssl", "true");
         props.setProperty("application_name", "LocalEGA");
-        props.setProperty("sslmode", "verify-full");
-        props.setProperty("sslrootcert", new File("test/rootCA.pem").getAbsolutePath());
+        props.setProperty("sslmode", "require");
+//        props.setProperty("sslrootcert", new File("test/rootCA.pem").getAbsolutePath());
         props.setProperty("sslcert", new File("test/localhost-client.pem").getAbsolutePath());
-        props.setProperty("sslkey", new File("test/localhost-client-key.der").getAbsolutePath());
+//        props.setProperty("sslkey", new File("test/localhost-client-key.der").getAbsolutePath());
         Connection connection = DriverManager.getConnection(url, props);
         PreparedStatement file = connection.prepareStatement("SELECT local_ega.insert_file('body.enc','requester@elixir-europe.org');");
         file.executeQuery();
