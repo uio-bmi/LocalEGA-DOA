@@ -35,7 +35,7 @@ outbox:
 
 spring:
   datasource:
-    url: jdbc:postgresql://${DB_INSTANCE:db}:${DB_PORT:5432}/${POSTGRES_DB:sda}?sslmode=${SSL_MODE:require}&sslcert=${CERT_PATH:/etc/ega/ssl/client.cert}
+    url: jdbc:postgresql://${DB_INSTANCE:db}:${DB_PORT:5432}/${POSTGRES_DB:sda}?sslmode=${SSL_MODE:require}&sslcert=${CERT_PATH:/etc/ega/ssl/client.cert}&sslkey=${KEY_PATH:/etc/ega/ssl/client.key}
     username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:rootpasswd}
     driver-class-name: org.postgresql.Driver
