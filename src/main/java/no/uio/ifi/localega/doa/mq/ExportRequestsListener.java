@@ -9,7 +9,6 @@ import io.minio.PutObjectArgs;
 import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.localega.doa.dto.DestinationFormat;
 import no.uio.ifi.localega.doa.dto.ExportRequest;
-import no.uio.ifi.localega.doa.model.Dataset;
 import no.uio.ifi.localega.doa.model.DatasetEventLog;
 import no.uio.ifi.localega.doa.services.AAIService;
 import no.uio.ifi.localega.doa.services.MetadataService;
@@ -27,7 +26,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Base64;
 import java.util.Collection;
-import java.util.Objects;
 
 /**
  * RabbitMQ listener that processes incoming export requests.
