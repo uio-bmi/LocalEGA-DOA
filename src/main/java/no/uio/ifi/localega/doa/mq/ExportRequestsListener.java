@@ -9,6 +9,7 @@ import io.minio.PutObjectArgs;
 import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.localega.doa.dto.DestinationFormat;
 import no.uio.ifi.localega.doa.dto.ExportRequest;
+import no.uio.ifi.localega.doa.model.Dataset;
 import no.uio.ifi.localega.doa.model.DatasetEventLog;
 import no.uio.ifi.localega.doa.services.AAIService;
 import no.uio.ifi.localega.doa.services.MetadataService;
@@ -26,6 +27,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Base64;
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * RabbitMQ listener that processes incoming export requests.
@@ -81,7 +83,17 @@ public class ExportRequestsListener {
                     String stableDatasetId = metadataService.getDataset(datasetsDbTableId).getStableId();
                     log.info("Reference id {} mapped to dataset id {}", requestedDatasetId, stableDatasetId);
                     requestedDatasetId = stableDatasetId; // use stable dataset id instead of reference to complete the export as normal
-                    Collection<String> approvedMappedDatasetIds = approvedDatasetIds.stream().map(x -> metadataService.getDataset(metadataService.findByReferenceId(x).getDatasetId()).getStableId()).toList();
+                    Collection<String> approvedMappedDatasetIds = approvedDatasetIds.stream()
+                            .map(x -> {
+                                var reference = metadataService.findByReferenceId(x);
+                                if (reference != null && reference.getDatasetId() != null) {
+                                    var dataset = metadataService.getDataset(reference.getDatasetId());
+                                    return dataset != null ? dataset.getStableId() : x;
+                                } else {
+                                    return x;
+                                }
+                            })
+                            .toList();
                     approvedDatasetIds = approvedMappedDatasetIds;
                 }
                 exportDataset(user, approvedDatasetIds, requestedDatasetId, exportRequest.getPublicKey(), exportRequest.getStartCoordinate(), exportRequest.getEndCoordinate());
