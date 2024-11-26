@@ -78,6 +78,9 @@ class LocalEGADOAApplicationTests {
 
         PreparedStatement dataset_event_released = connection.prepareStatement(prepareInsertQueryDatasetEvent("EGAD00010000919", "released", "release"));
         dataset_event_released.executeUpdate();
+
+        PreparedStatement datasetReferenceInsert = connection.prepareStatement("INSERT INTO sda.dataset_references(dataset_id, reference_id, reference_scheme) values('1', 'GDI-NO-10001','GDI');");
+        datasetReferenceInsert.executeUpdate();
         connection.close();
 
         JSONArray tokens = Unirest.get("http://localhost:8000/tokens").asJson().getBody().getArray();
@@ -266,6 +269,38 @@ class LocalEGADOAApplicationTests {
         export("EGAD00010000919", true);
         PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/my.sec.pem"), "passw0rd".toCharArray());
         try (InputStream byteArrayInputStream = getMinioClient().getObject(GetObjectArgs.builder().bucket("lega").object("requester@elixir-europe.org/body.enc").build());
+             Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(byteArrayInputStream, privateKey)) {
+            byte[] bytes = IOUtils.toByteArray(crypt4GHInputStream);
+            Assertions.assertEquals("2aef808fb42fa7b1ba76cb16644773f9902a3fdc2569e8fdc049f38280c4577e", DigestUtils.sha256Hex(bytes));
+        }
+    }
+
+    @SneakyThrows
+    @Test
+    void testS3ExportRequestReferenceValidToken() {
+        if (System.getenv("OUTBOX_TYPE").equals("POSIX")) {
+            Assertions.assertTrue(true);
+            return;
+        }
+        export("GDI-NO-10001", true);
+        PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/my.sec.pem"), "passw0rd".toCharArray());
+        try (InputStream byteArrayInputStream = getMinioClient().getObject(GetObjectArgs.builder().bucket("lega").object("requester@elixir-europe.org/body.enc").build());
+             Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(byteArrayInputStream, privateKey)) {
+            byte[] bytes = IOUtils.toByteArray(crypt4GHInputStream);
+            Assertions.assertEquals("2aef808fb42fa7b1ba76cb16644773f9902a3fdc2569e8fdc049f38280c4577e", DigestUtils.sha256Hex(bytes));
+        }
+    }
+
+    @SneakyThrows
+    @Test
+    void testPOSIXExportRequestReferenceValidToken() {
+        if (System.getenv("OUTBOX_TYPE").equals("S3")) {
+            Assertions.assertTrue(true);
+            return;
+        }
+        export("GDI-NO-10001", true);
+        PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/my.sec.pem"), "passw0rd".toCharArray());
+        try (InputStream byteArrayInputStream = new FileInputStream("requester@elixir-europe.org/files/body.enc");
              Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(byteArrayInputStream, privateKey)) {
             byte[] bytes = IOUtils.toByteArray(crypt4GHInputStream);
             Assertions.assertEquals("2aef808fb42fa7b1ba76cb16644773f9902a3fdc2569e8fdc049f38280c4577e", DigestUtils.sha256Hex(bytes));
