@@ -144,7 +144,7 @@ async def jwk_response(request):
 
 async def tokens_response(request):
     """Serve generated tokens."""
-    data = [DATA[1], DATA[2]]
+    data = [DATA[1], DATA[2], DATA[6]]
     return web.json_response(data)
 
 
