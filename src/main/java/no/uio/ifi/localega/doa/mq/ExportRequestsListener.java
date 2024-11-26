@@ -81,7 +81,17 @@ public class ExportRequestsListener {
                     String stableDatasetId = metadataService.getDataset(datasetsDbTableId).getStableId();
                     log.info("Reference id {} mapped to dataset id {}", requestedDatasetId, stableDatasetId);
                     requestedDatasetId = stableDatasetId; // use stable dataset id instead of reference to complete the export as normal
-                    Collection<String> approvedMappedDatasetIds = approvedDatasetIds.stream().map(x -> metadataService.getDataset(metadataService.findByReferenceId(x).getDatasetId()).getStableId()).toList();
+                    Collection<String> approvedMappedDatasetIds = approvedDatasetIds.stream()
+                            .map(x -> {
+                                var reference = metadataService.findByReferenceId(x);
+                                if (reference != null && reference.getDatasetId() != null) {
+                                    var dataset = metadataService.getDataset(reference.getDatasetId());
+                                    return dataset != null ? dataset.getStableId() : x;
+                                } else {
+                                    return x;
+                                }
+                            })
+                            .toList();
                     approvedDatasetIds = approvedMappedDatasetIds;
                 }
                 exportDataset(user, approvedDatasetIds, requestedDatasetId, exportRequest.getPublicKey(), exportRequest.getStartCoordinate(), exportRequest.getEndCoordinate());
