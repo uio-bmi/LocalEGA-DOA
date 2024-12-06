@@ -60,11 +60,14 @@ jobs:
         run: |
           /bin/sh ./test/make_crypt4gh_files.sh
 
-      - name: List files in the directory
-        run: ls -R ./test/
+      - name: Docker logs
+        run: |
+          docker ps
+          docker ps -a
+          docker logs certfixer
 
       - name: List files in the directory
-        run: ls -R ./test/client_certs/
+        run: ls -R ./test/
 
       - name: Transform Client Private Key to DER
         run: |
