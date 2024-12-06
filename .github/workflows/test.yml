@@ -51,6 +51,10 @@ jobs:
         run: |
           docker compose -f docker-compose-${{ matrix.storagetype }}-outbox.yml
 
+      - name: Sleep and Status check
+        run: |
+          sleep 30
+          docker service list
 
       - name: Make encryption files
         run: |
@@ -65,11 +69,6 @@ jobs:
         with:
           distribution: zulu
           java-version: ${{ matrix.java-version }}
-
-      - name: Sleep and Status check
-        run: |
-          sleep 30
-          docker service list
 
       - uses: actions/cache@v4
         with:
