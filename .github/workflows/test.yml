@@ -53,24 +53,19 @@ jobs:
 
       - name: Sleep and Status check
         run: |
-          sleep 30
+          sleep 10
           docker ps
 
       - name: Make encryption files
         run: |
           /bin/sh ./test/make_crypt4gh_files.sh
 
-      - name: Docker logs
-        run: |
-          docker ps
-          docker ps -a
-          docker logs certfixer
-
       - name: List files in the directory
-        run: ls -R ./test/
+        run: ls -l ./test/client_certs
 
       - name: Transform Client Private Key to DER
         run: |
+          chmod 644 ./test/client_certs/client.key
           openssl pkcs8 -topk8 -inform PEM -outform DER -in ./test/client_certs/client.key -out ./test/client_certs/client.der -nocrypt
 
       - name: Set up JDK
