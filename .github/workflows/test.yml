@@ -49,7 +49,7 @@ jobs:
 
       - name: Docker Stack Deploy for ${{ matrix.storagetype }} storage
         run: |
-          docker compose -f docker-compose-${{ matrix.storagetype }}-outbox.yml
+          docker compose -f docker-compose-${{ matrix.storagetype }}-outbox.yml up
 
       - name: Sleep and Status check
         run: |
