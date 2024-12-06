@@ -19,14 +19,15 @@ jobs:
       BROKER_HOST: localhost
       BROKER_VALIDATE: false
       DB_INSTANCE: localhost
-      ROOT_CERT_PATH: test/rootCA.pem
-      CERT_PATH: test/localhost-client.pem
-      CERT_KEY: test/localhost-client-key.der
+      ROOT_CERT_PATH: ./test/client_certs/ca.crt
+      CERT_PATH: ./test/client_certs/client.crt
+      CERT_KEY: ./test/client_certs/client.der
       POSTGRES_PASSWORD: rootpasswd
       OPENID_CONFIGURATION_URL: http://localhost:8000/openid-configuration
       USERINFO_ENDPOINT_URL: http://localhost:8000/userinfo
-      CRYPT4GH_PRIVATE_KEY_PATH: test/crypt4gh.sec.pem
-      CRYPT4GH_PRIVATE_KEY_PASSWORD_PATH: test/crypt4gh.pass
+      CRYPT4GH_PRIVATE_KEY_PATH: test/crypt4gh/crypt4gh.sec.pem
+      CRYPT4GH_PRIVATE_KEY_PASSWORD_PATH: test/crypt4gh/crypt4gh.pass
+      BROKER_USERNAME: admin
 
     steps:
 
@@ -48,8 +49,16 @@ jobs:
 
       - name: Docker Stack Deploy for ${{ matrix.storagetype }} storage
         run: |
-          docker swarm init
-          docker stack deploy DOA --compose-file docker-compose-${{ matrix.storagetype }}-outbox.yml
+          docker compose -f docker-compose-${{ matrix.storagetype }}-outbox.yml
+
+
+      - name: Make encryption files
+        run: |
+          /bin/sh ./test/make_crypt4gh_files.sh
+
+      - name: Transform Client Private Key to DER
+        run: |
+          openssl pkcs8 -topk8 -inform PEM -outform DER -in ./test/client_certs/client.key -out ./test/client_certs/client.der -nocrypt
 
       - name: Set up JDK
         uses: actions/setup-java@v4.5.0
@@ -102,5 +111,4 @@ jobs:
       - name: Docker Service Logs
         if: failure()
         run: |
-          docker service logs DOA_db
-          docker service logs DOA_mockauth
+          docker ps

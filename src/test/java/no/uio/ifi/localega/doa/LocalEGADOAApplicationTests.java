@@ -54,9 +54,9 @@ class LocalEGADOAApplicationTests {
         props.setProperty("ssl", "true");
         props.setProperty("application_name", "LocalEGA");
         props.setProperty("sslmode", "verify-full");
-        props.setProperty("sslrootcert", new File("test/rootCA.pem").getAbsolutePath());
-        props.setProperty("sslcert", new File("test/localhost-client.pem").getAbsolutePath());
-        props.setProperty("sslkey", new File("test/localhost-client-key.der").getAbsolutePath());
+        props.setProperty("sslrootcert", new File("./test/client_certs/ca.crt").getAbsolutePath());
+        props.setProperty("sslcert", new File("./test/client_certs/client.crt").getAbsolutePath());
+        props.setProperty("sslkey", new File("./test/client_certs/client.der").getAbsolutePath());
         Connection connection = DriverManager.getConnection(url, props);
         PreparedStatement file = connection.prepareStatement("SELECT local_ega.insert_file('body.enc','requester@elixir-europe.org');");
         file.executeQuery();
@@ -181,8 +181,8 @@ class LocalEGADOAApplicationTests {
     @SneakyThrows
     @Test
     void testStreamingValidTokenValidFileFullEncrypted() {
-        String publicKey = Files.readString(new File("test/crypt4gh.pub.pem").toPath());
-        PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/crypt4gh.sec.pem"), "password".toCharArray());
+        String publicKey = Files.readString(new File("test/crypt4gh/crypt4gh.pub.pem").toPath());
+        PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/crypt4gh/crypt4gh.sec.pem"), "password".toCharArray());
         HttpResponse<byte[]> response = Unirest.get("http://localhost:8080/files/EGAF00000000014?destinationFormat=crypt4gh").header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken).header("Public-Key", publicKey).asBytes();
         int status = response.getStatus();
         Assertions.assertEquals(HttpStatus.OK.value(), status);
@@ -196,8 +196,8 @@ class LocalEGADOAApplicationTests {
     @SneakyThrows
     @Test
     void testStreamingValidTokenValidFileRangeEncrypted() {
-        String publicKey = Files.readString(new File("test/crypt4gh.pub.pem").toPath());
-        PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/crypt4gh.sec.pem"), "password".toCharArray());
+        String publicKey = Files.readString(new File("test/crypt4gh/crypt4gh.pub.pem").toPath());
+        PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/crypt4gh/crypt4gh.sec.pem"), "password".toCharArray());
         HttpResponse<byte[]> response = Unirest.get("http://localhost:8080/files/EGAF00000000014?startCoordinate=100&endCoordinate=200&destinationFormat=crypt4gh").header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken).header("Public-Key", publicKey).asBytes();
         int status = response.getStatus();
         Assertions.assertEquals(HttpStatus.OK.value(), status);
@@ -216,7 +216,7 @@ class LocalEGADOAApplicationTests {
             return;
         }
         export("EGAF00000000014", false);
-        PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/my.sec.pem"), "passw0rd".toCharArray());
+        PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/crypt4gh/my.sec.pem"), "passw0rd".toCharArray());
         try (InputStream byteArrayInputStream = new FileInputStream("requester@elixir-europe.org/files/body.enc");
              Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(byteArrayInputStream, privateKey)) {
             byte[] bytes = IOUtils.toByteArray(crypt4GHInputStream);
@@ -232,7 +232,7 @@ class LocalEGADOAApplicationTests {
             return;
         }
         export("EGAD00010000919", true);
-        PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/my.sec.pem"), "passw0rd".toCharArray());
+        PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/crypt4gh/my.sec.pem"), "passw0rd".toCharArray());
         try (InputStream byteArrayInputStream = new FileInputStream("requester@elixir-europe.org/files/body.enc");
              Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(byteArrayInputStream, privateKey)) {
             byte[] bytes = IOUtils.toByteArray(crypt4GHInputStream);
@@ -248,7 +248,7 @@ class LocalEGADOAApplicationTests {
             return;
         }
         export("EGAF00000000014", false);
-        PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/my.sec.pem"), "passw0rd".toCharArray());
+        PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/crypt4gh/my.sec.pem"), "passw0rd".toCharArray());
         try (InputStream byteArrayInputStream = getMinioClient().getObject(GetObjectArgs.builder().bucket("lega").object("requester@elixir-europe.org/body.enc").build());
              Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(byteArrayInputStream, privateKey)) {
             byte[] bytes = IOUtils.toByteArray(crypt4GHInputStream);
@@ -264,7 +264,7 @@ class LocalEGADOAApplicationTests {
             return;
         }
         export("EGAD00010000919", true);
-        PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/my.sec.pem"), "passw0rd".toCharArray());
+        PrivateKey privateKey = KeyUtils.getInstance().readPrivateKey(new File("test/crypt4ghmy.sec.pem"), "passw0rd".toCharArray());
         try (InputStream byteArrayInputStream = getMinioClient().getObject(GetObjectArgs.builder().bucket("lega").object("requester@elixir-europe.org/body.enc").build());
              Crypt4GHInputStream crypt4GHInputStream = new Crypt4GHInputStream(byteArrayInputStream, privateKey)) {
             byte[] bytes = IOUtils.toByteArray(crypt4GHInputStream);
@@ -274,7 +274,7 @@ class LocalEGADOAApplicationTests {
 
     @SneakyThrows
     void export(String id, boolean dataset) {
-        String mqConnectionString = "amqps://admin:guest@localhost:5671/sda";
+        String mqConnectionString = "amqps://guest:guest@localhost:5671/sda";
         ConnectionFactory factory = new ConnectionFactory();
         factory.setUri(mqConnectionString);
         com.rabbitmq.client.Connection connectionFactory = factory.newConnection();
@@ -295,7 +295,7 @@ class LocalEGADOAApplicationTests {
                 validToken,
                 dataset ? "datasetId" : "fileId",
                 id,
-                FileUtils.readFileToString(new File("test/my.pub.pem"), Charset.defaultCharset()));
+                FileUtils.readFileToString(new File("test/crypt4gh/my.pub.pem"), Charset.defaultCharset()));
         channel.basicPublish("",
                 "exportRequests",
                 properties,
