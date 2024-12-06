@@ -60,6 +60,12 @@ jobs:
         run: |
           /bin/sh ./test/make_crypt4gh_files.sh
 
+      - name: List files in the directory
+        run: ls -R ./test/
+
+      - name: List files in the directory
+        run: ls -R ./test/client_certs/
+
       - name: Transform Client Private Key to DER
         run: |
           openssl pkcs8 -topk8 -inform PEM -outform DER -in ./test/client_certs/client.key -out ./test/client_certs/client.der -nocrypt
