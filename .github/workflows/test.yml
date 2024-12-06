@@ -54,7 +54,7 @@ jobs:
       - name: Sleep and Status check
         run: |
           sleep 30
-          docker service list
+          docker ps
 
       - name: Make encryption files
         run: |
