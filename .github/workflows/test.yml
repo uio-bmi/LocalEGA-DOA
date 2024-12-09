@@ -25,8 +25,8 @@ jobs:
       POSTGRES_PASSWORD: rootpasswd
       OPENID_CONFIGURATION_URL: http://localhost:8000/openid-configuration
       USERINFO_ENDPOINT_URL: http://localhost:8000/userinfo
-      CRYPT4GH_PRIVATE_KEY_PATH: test/crypt4gh/crypt4gh.sec.pem
-      CRYPT4GH_PRIVATE_KEY_PASSWORD_PATH: test/crypt4gh/crypt4gh.pass
+      CRYPT4GH_PRIVATE_KEY_PATH: ./test/crypt4gh/crypt4gh.sec.pem
+      CRYPT4GH_PRIVATE_KEY_PASSWORD_PATH: ./test/crypt4gh/crypt4gh.pass
       BROKER_USERNAME: guest
 
     steps:
