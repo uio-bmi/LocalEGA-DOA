@@ -56,7 +56,7 @@ jobs:
 #          sleep 10
 #          docker ps
       - name: List files in the directory
-        run: ls -l /test/client_certs
+        run: ls -l ./test/client_certs
 
       - name: Make encryption files
         run: |
