@@ -57,8 +57,9 @@ jobs:
 #          docker ps
 
       - name: Make encryption files
+        working-directory: ./test
         run: |
-          /bin/sh ./test/make_crypt4gh_files.sh
+          /bin/sh ./make_crypt4gh_files.sh
           ls -l test
 
       - name: Set up JDK
