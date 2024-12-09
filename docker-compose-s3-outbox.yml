@@ -89,9 +89,17 @@ services:
       - MINIO_ACCESS_KEY=minio
       - MINIO_SECRET_KEY=miniostorage
     command: server /data
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   createbucket:
     image: minio/mc
+    depends_on:
+      outbox:
+        condition: service_healthy
     entrypoint: >
       /bin/sh -c "
       /usr/bin/mc config host add s3 http://outbox:9000 minio miniostorage;
