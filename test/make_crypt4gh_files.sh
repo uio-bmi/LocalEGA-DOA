@@ -41,3 +41,5 @@ chmod 444 crypt4gh/my.sec.pem
 printf "password" > crypt4gh/crypt4gh.pass
 
 chmod 444 crypt4gh/crypt4gh.pass
+
+echo "CRYPT4GH files created successfully"

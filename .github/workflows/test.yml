@@ -59,6 +59,7 @@ jobs:
       - name: Make encryption files
         run: |
           /bin/sh ./test/make_crypt4gh_files.sh
+          ls -l test
 
       - name: Set up JDK
         uses: actions/setup-java@v4.5.0
