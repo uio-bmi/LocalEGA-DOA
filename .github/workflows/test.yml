@@ -19,9 +19,9 @@ jobs:
       BROKER_HOST: localhost
       BROKER_VALIDATE: false
       DB_INSTANCE: localhost
-      ROOT_CERT_PATH: /test/client_certs/ca.crt
-      CERT_PATH: /test/client_certs/client.crt
-      CERT_KEY: /test/client_certs/client.der
+      ROOT_CERT_PATH: ./test/client_certs/ca.crt
+      CERT_PATH: ./test/client_certs/client.crt
+      CERT_KEY: ./test/client_certs/client.der
       POSTGRES_PASSWORD: rootpasswd
       OPENID_CONFIGURATION_URL: http://localhost:8000/openid-configuration
       USERINFO_ENDPOINT_URL: http://localhost:8000/userinfo
@@ -55,8 +55,6 @@ jobs:
 #        run: |
 #          sleep 10
 #          docker ps
-      - name: List files in the directory
-        run: ls -l ./test/client_certs
 
       - name: Make encryption files
         run: |
