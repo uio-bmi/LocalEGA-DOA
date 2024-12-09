@@ -65,6 +65,7 @@ jobs:
 
       - name: Transform Client Private Key to DER
         run: |
+          whoami
           chmod 644 /test/client_certs/client.key
           openssl pkcs8 -topk8 -inform PEM -outform DER -in /test/client_certs/client.key -out /test/client_certs/client.der -nocrypt
 
