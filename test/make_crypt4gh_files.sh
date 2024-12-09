@@ -1,6 +1,6 @@
 #!/bin/sh
 
-mkdir -p crypt4gh
+mkdir -p ./crypt4gh
 
 cat << 'EOF' > crypt4gh/crypt4gh.pub.pem
 -----BEGIN CRYPT4GH PUBLIC KEY-----
