@@ -60,12 +60,8 @@ jobs:
         run: |
           /bin/sh ./test/make_crypt4gh_files.sh
 
-      - name: List files in the directory
-        run: ls -l ./test/client_certs
-
       - name: Transform Client Private Key to DER
         run: |
-          chmod 644 ./test/client_certs/client.key
           openssl pkcs8 -topk8 -inform PEM -outform DER -in /test/client_certs/client.key -out /test/client_certs/client.der -nocrypt
 
       - name: Set up JDK
