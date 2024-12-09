@@ -47,7 +47,7 @@ jobs:
           echo "OUTBOX_TYPE=POSIX" >> $GITHUB_ENV
           echo "OUTBOX_LOCATION=$PWD/%s/files/" >> $GITHUB_ENV
 
-      - name: Docker Stack Deploy for ${{ matrix.storagetype }} storage
+      - name: Docker compose deploy for ${{ matrix.storagetype }} storage
         run: |
           docker compose -f docker-compose-${{ matrix.storagetype }}-outbox.yml up -d
 
