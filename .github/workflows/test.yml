@@ -19,9 +19,9 @@ jobs:
       BROKER_HOST: localhost
       BROKER_VALIDATE: false
       DB_INSTANCE: localhost
-      ROOT_CERT_PATH: ./test/client_certs/ca.crt
-      CERT_PATH: ./test/client_certs/client.crt
-      CERT_KEY: ./test/client_certs/client.der
+      ROOT_CERT_PATH: /test/client_certs/ca.crt
+      CERT_PATH: /test/client_certs/client.crt
+      CERT_KEY: /test/client_certs/client.der
       POSTGRES_PASSWORD: rootpasswd
       OPENID_CONFIGURATION_URL: http://localhost:8000/openid-configuration
       USERINFO_ENDPOINT_URL: http://localhost:8000/userinfo
@@ -66,7 +66,7 @@ jobs:
       - name: Transform Client Private Key to DER
         run: |
           chmod 644 ./test/client_certs/client.key
-          openssl pkcs8 -topk8 -inform PEM -outform DER -in ./test/client_certs/client.key -out ./test/client_certs/client.der -nocrypt
+          openssl pkcs8 -topk8 -inform PEM -outform DER -in /test/client_certs/client.key -out /test/client_certs/client.der -nocrypt
 
       - name: Set up JDK
         uses: actions/setup-java@v4.5.0

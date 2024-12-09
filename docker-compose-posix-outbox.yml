@@ -12,7 +12,7 @@ services:
       - certs:/certs
       - client_certs:/client_certs
       - /tmp:/temp
-      - ./test/client_certs:/client_certs
+      - /test/client_certs:/client_certs
 
   postgres:
     container_name: postgres
