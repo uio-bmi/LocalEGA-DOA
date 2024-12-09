@@ -27,7 +27,7 @@ jobs:
       USERINFO_ENDPOINT_URL: http://localhost:8000/userinfo
       CRYPT4GH_PRIVATE_KEY_PATH: test/crypt4gh/crypt4gh.sec.pem
       CRYPT4GH_PRIVATE_KEY_PASSWORD_PATH: test/crypt4gh/crypt4gh.pass
-      BROKER_USERNAME: admin
+      BROKER_USERNAME: guest
 
     steps:
 
@@ -92,7 +92,7 @@ jobs:
           until lsof -i -P -n | grep ":8080";
           do
           RETRY_TIMES=$((RETRY_TIMES+1));
-          if [ $RETRY_TIMES -eq 30 ]; then exit 1; fi
+          if [ $RETRY_TIMES -eq 3 ]; then exit 1; fi
           sleep 10;
           done
 
